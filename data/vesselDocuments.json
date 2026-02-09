@@ -1,0 +1,41 @@
+[
+  {
+    "id": 2,
+    "vesselId": 1,
+    "type": "INSURANCE",
+    "issuer": "",
+    "policyNumber": "CVH098876544",
+    "coverageAmountNZD": 5000000,
+    "issueDate": "2025-08-13",
+    "expiryDate": "2026-08-12",
+    "file": null,
+    "createdAt": "2026-01-20T06:30:17.033Z",
+    "updatedAt": "2026-01-20T06:30:17.033Z"
+  },
+  {
+    "id": 3,
+    "vesselId": 1,
+    "type": "SHORE_POWER_LEAD_TEST",
+    "issuer": "",
+    "policyNumber": "",
+    "coverageAmountNZD": null,
+    "issueDate": "2026-01-13",
+    "expiryDate": "2027-01-12",
+    "file": null,
+    "createdAt": "2026-01-20T06:55:41.057Z",
+    "updatedAt": "2026-01-20T06:55:41.057Z"
+  },
+  {
+    "id": 4,
+    "vesselId": 1,
+    "type": "EWoF",
+    "issuer": "",
+    "policyNumber": "",
+    "coverageAmountNZD": null,
+    "issueDate": "2025-12-23",
+    "expiryDate": "2026-12-22",
+    "file": null,
+    "createdAt": "2026-01-20T06:56:16.172Z",
+    "updatedAt": "2026-01-20T06:56:16.172Z"
+  }
+]

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="styles.css" />
+
+  <title>BoatiesMate – Booking (Prototype)</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 520px; }
+    h2 { margin-top: 0; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, select, textarea, button { width: 100%; padding: 8px; margin-top: 6px; box-sizing: border-box; }
+    button { margin-top: 14px; cursor: pointer; }
+    .row { display: flex; gap: 10px; }
+    .row > div { flex: 1; }
+    pre { background: #f5f5f5; padding: 10px; margin-top: 14px; font-size: 12px; white-space: pre-wrap; }
+    .card { border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-top: 14px; }
+    .hint { font-size: 12px; color: #444; margin-top: 6px; }
+    code { background: #f0f0f0; padding: 1px 4px; border-radius: 4px; }
+    .field-error { outline: 2px solid #b00020; outline-offset: 1px; }
+
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #ddd; background:#f7f7f7; }
+    .badge-strong { border-color:#bcd; background:#eef6ff; }
+    .section-title { margin: 10px 0 6px 0; font-weight: bold; }
+    .small { font-size: 12px; color:#444; }
+    .kv { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+    .kv span { font-size:12px; color:#444; }
+    details { margin-top: 8px; }
+    details > summary { cursor: pointer; font-size: 12px; color:#2b5cab; }
+  </style>
+</head>
+<body>
+  <div style="margin: 12px 0 14px;">
+    <a class="btn-secondary" href="/">← Back to Home</a>
+  </div>
+  <div class="demo-badge">BoatiesMate Prototype — Demo Mode<small>Phase 11</small></div>
+  <div class="muted" style="margin-bottom:12px;">
+    <a class="btn-secondary" href="boatie-demo.html">← Back to Boatie Demo</a>
+  </div>
+  <header class="brand-header">
+    <div class="brand-header__inner">
+      <img
+        class="brand-logo"
+        src="/boatiesmate-secondary-long-ocean.png"
+        alt="BoatiesMate"
+      />
+      <span class="role-pill role-pill--boatie">Boatie</span>
+    </div>
+  </header>
+
+<div class="card">
+  <label>API Base URL</label>
+  <input type="text" id="apiBase" value="http://localhost:3000" />
+
+  <label>Marina ID (filter moorings)</label>
+  <input type="number" id="marinaId" value="2" min="1" />
+
+  <button id="loadMooringsBtn" type="button" class="btn-secondary">Load Moorings</button>
+  <div class="hint">
+    Loads from <code>/api/moorings?marinaId=…</code> (matches your working curl).
+  </div>
+
+  <label>Mooring</label>
+  <select id="mooringId" required>
+    <option value="">Click “Load Moorings” first…</option>
+  </select>
+</div>
+
+<div class="card">
+  <h3 style="margin: 0 0 6px 0;">Search Availability</h3>
+
+  <div class="hint" style="margin-bottom: 10px;">
+    Calls <code>GET /api/availability</code> and returns suitable, available moorings ranked by score.
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Marina ID</label>
+      <input type="number" id="availMarinaId" value="2" min="1" />
+    </div>
+    <div>
+      <label>Vessel</label>
+
+      <select id="availVesselId" required>
+        <option value="">Loading vessels…</option>
+      </select>
+
+      <button id="reloadVesselsBtn" type="button" class="btn-secondary">Reload Vessels</button>
+      <div class="hint">Loads from <code>/api/vessels</code> using the API Base URL above.</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Start Date</label>
+      <input type="date" id="availStartDate" required />
+    </div>
+    <div>
+      <label>End Date</label>
+      <input type="date" id="availEndDate" required />
+    </div>
+  </div>
+
+  <label>Block statuses</label>
+  <select id="availBlockStatuses">
+    <option value="approved" selected>approved (recommended for customer search)</option>
+    <option value="pending,approved">pending + approved (strict)</option>
+  </select>
+
+  <div class="row">
+    <div>
+      <button id="availSearchBtn" type="button" class="btn-accent">Search Availability</button>
+    </div>
+    <div>
+      <button id="availClearBtn" type="button" class="btn-secondary">Clear results</button>
+    </div>
+  </div>
+
+  <div id="availSummary" class="hint"></div>
+  <div id="availResults"></div>
+</div>
+
+<div class="card">
+  <h3 style="margin: 0 0 6px 0;">Create Booking (Owner)</h3>
+
+  <div class="row">
+    <div>
+      <label>Owner ID</label>
+      <input type="number" id="ownerId" value="2" min="1" required />
+    </div>
+    <div>
+      <label>Vessel ID</label>
+      <input type="number" id="vesselId" value="3" min="1" required />
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Start Date</label>
+      <input type="date" id="startDate" required />
+    </div>
+    <div>
+      <label>End Date</label>
+      <input type="date" id="endDate" required />
+    </div>
+  </div>
+
+  <label>Notes (optional)</label>
+  <textarea id="notes" rows="3" placeholder="e.g., Visitor booking – Gulf Harbour"></textarea>
+
+  <button id="createBtn" type="button" class="btn-primary">Create Booking</button>
+
+  <div class="hint">
+    Submits JSON to <code>POST /api/bookings</code>. A new booking ID is auto-copied into the approval box below.
+  </div>
+</div>
+
+<div class="card">
+  <details class="card" style="margin-top:14px;">
+    <summary style="font-weight:bold;">Operator Tools (Demo Only)</summary>
+    <div style="margin-top:10px;">
+      <h3 style="margin: 0 0 6px 0;">Approve Booking (Operator)</h3>  
+
+  <label>Operator Token (paste from your Terminal TOKEN)</label>
+  <input type="text" id="token" placeholder="Paste token here (no 'Bearer ' prefix)" />
+
+  <label>Booking ID to approve</label>
+  <input type="number" id="approveBookingId" min="1" placeholder="e.g., 4" />
+
+  <button id="approveBtn" type="button" class="btn-primary">Approve Booking</button>
+  <button id="declineBtn" type="button" class="btn-decline">Decline Booking</button>
+</div>
+</details>
+
+  <hr style="margin:18px 0;" />
+
+  <h3>Application Pack (Operator)</h3>
+  <div class="hint" style="margin-top:6px;">
+    Loads everything the marina operator needs to assess the booking: owner profile, vessel details, required docs, and compliance status.
+  </div>
+  
+  <label for="packBookingId" style="margin-top:12px;">Booking ID (for Application Pack)</label>
+  <input id="packBookingId" type="number" min="1" placeholder="e.g. 24" />
+  
+  <button id="loadPackBtn" type="button" class="btn-accent">Load Application Pack</button>
+  
+  <pre id="packOutput" style="margin-top:10px; white-space:pre-wrap; border:1px solid #ddd; border-radius:6px; padding:10px; max-height:320px; overflow:auto;">
+  </pre>  
+
+  <!-- Decline reason (Option C: presets + Other) -->
+  <div id="declineReasonWrap" class="card" style="margin-top:12px; display:none;">
+    <div style="font-weight:bold; margin-bottom:6px;">Decline reason</div>
+
+    <label style="margin-top:0;">Select a reason</label>
+    <select id="declineReasonPreset">
+      <option value="">(optional) Choose a reason…</option>
+      <option value="Not suitable for vessel">Not suitable for vessel</option>
+      <option value="No availability for requested dates">No availability for requested dates</option>
+      <option value="Maintenance / mooring unavailable">Maintenance / mooring unavailable</option>
+      <option value="Operator policy / restriction">Operator policy / restriction</option>
+      <option value="Safety / weather conditions">Safety / weather conditions</option>
+      <option value="Other">Other…</option>
+    </select>
+
+    <div id="declineOtherWrap" style="display:none;">
+      <label>Other reason</label>
+      <textarea id="declineReasonOther" rows="2" placeholder="Enter reason (optional)"></textarea>
+    </div>
+
+    <div class="row">
+      <div>
+        <button id="declineConfirmBtn" type="button" class="btn-decline">Confirm Decline</button>
+      </div>
+      <div>
+        <button id="declineCancelBtn" type="button" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <div class="hint">
+      This will submit to <code>POST /api/bookings/:id/decline</code> as <code>{ reason }</code>.
+    </div>
+  </div>
+
+  <div class="hint">
+    Calls <code>POST /api/bookings/:id/approve</code> with <code>Authorization: Bearer &lt;token&gt;</code>.
+  </div>
+</div>
+
+<div id="banner" class="card" style="display:none; border-left: 6px solid #888;">
+  <div id="bannerTitle" style="font-weight:bold;"></div>
+  <div id="bannerBody" style="margin-top:6px;"></div>
+</div>
+
+<pre id="result">Ready.</pre>
+
+<script src="/booking-form.js"></script>
+</body>
+</html>

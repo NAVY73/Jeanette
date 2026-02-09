@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>BoatiesMate – Marina Terms & Conditions (Demo)</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16px; max-width: 760px; margin: 0 auto; }
+    h2 { margin-top: 0; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin: 12px 0; }
+    .muted { color:#666; font-size: 13px; }
+    ul { margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div style="margin: 12px 0 14px;">
+    <a class="btn-secondary" href="/">← Back to Home</a>
+  </div>
+  <header class="brand-header">
+    <div class="brand-header__inner">
+      <img
+        class="brand-logo"
+        src="/boatiesmate-secondary-long-ocean.png"
+        alt="BoatiesMate"
+      />
+      <span class="role-pill role-pill--boatie">Boatie</span>
+    </div>
+  </header>
+  <h2>Marina Terms & Conditions (Demo)</h2>
+  <div class="muted">This is a demo page to simulate marina terms being presented to the boatie prior to arrival.</div>
+
+  <div class="card">
+    <div><strong>Marina</strong>: <span id="marinaName">Loading…</span></div>
+    <div class="muted">Marina ID: <span id="marinaId">—</span></div>
+  </div>
+
+  <div class="card">
+    <div><strong>Key Terms (Example Only)</strong></div>
+    <ul>
+      <li>Arrival and departure must match the approved booking dates.</li>
+      <li>Vessel must maintain valid insurance and required compliance documents.</li>
+      <li>Marina staff instructions must be followed while manoeuvring and berthing.</li>
+      <li>Payment (if applicable) is due as specified by the marina.</li>
+      <li>Safety requirements apply at all times (lifejackets, speed limits, etc.).</li>
+      <li>The marina may decline access if terms are not met.</li>
+    </ul>
+    <div class="muted">In production, this page would be the marina’s authoritative terms (and could include a PDF link / versioning / acceptance record).</div>
+  </div>
+
+  <script>
+    (async () => {
+      const qs = new URLSearchParams(location.search);
+      const marinaId = qs.get("marinaId");
+
+      document.getElementById("marinaId").textContent = marinaId || "—";
+
+      async function loadMarina() {
+        if (!marinaId) {
+          document.getElementById("marinaName").textContent = "—";
+          return;
+        }
+        try {
+          const res = await fetch(`/api/marinas`);
+          const data = await res.json();
+          const list = data.marinas || data || [];
+          const m = list.find(x => String(x.id) === String(marinaId));
+          document.getElementById("marinaName").textContent = (m && (m.name || m.title)) ? (m.name || m.title) : "Marina";
+        } catch {
+          document.getElementById("marinaName").textContent = "Marina";
+        }
+      }
+
+      await loadMarina();
+    })();
+  </script>
+</body>
+</html>

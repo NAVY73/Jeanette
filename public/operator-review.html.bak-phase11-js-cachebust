@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>BoatiesMate – Operator Review</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 980px; margin: 0 auto; }
+    h2 { margin: 0 0 6px 0; }
+    .muted { color: #666; font-size: 13px; }
+    .row { display: grid; grid-template-columns: 220px 1fr; gap: 10px; align-items: start; margin-top: 10px; }
+    .k { font-weight: bold; }
+    input, button, textarea { padding: 8px; font-size: 14px; }
+    input, textarea { width: 100%; box-sizing: border-box; }
+    button { cursor: pointer; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-top: 12px; }
+    .grid2 { display: grid; grid-template-columns: 180px 1fr; gap: 8px 12px; }
+
+    /* Pills (shared language with Inbox) */
+    .pill { display: inline-block; padding: 3px 8px; border: 1px solid #ccc; border-radius: 999px; font-size: 12px; background: #f7f7f7; }
+    .pill-ok { border-color: #2e7d32; color: #2e7d32; background: #f3fbf5; }
+    .pill-warn { border-color: #9a6a00; color: #9a6a00; background: #fff7ea; }
+    .pill-bad { border-color: #b00020; color: #b00020; background: #fff1f3; }
+    .pill-neutral { border-color: #666; color: #666; background: #f7f7f7; }
+
+    /* Existing badges (keep) */
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; }
+    .badge.ok { background: #e7f6ea; border: 1px solid #b9e2c0; color: #1b5e20; }
+    .badge.err { background: #fde8ea; border: 1px solid #f5b8bf; color: #7f0015; }
+    .badge.warn { background: #fff3e0; border: 1px solid #ffd59a; color: #7a4a00; }
+
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .right { text-align: right; }
+    pre { background: #111; color: #eee; padding: 12px; border-radius: 10px; overflow: auto; font-size: 12px; }
+    a { color: #2b5cab; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Banner */
+    #banner { display:none; border: 1px solid #ddd; border-left-width: 6px; border-radius: 10px; padding: 10px 12px; margin: 12px 0; }
+    #bannerTitle { font-weight: bold; margin-bottom: 4px; }
+  </style>
+
+</head>
+<body>
+  <div class="demo-badge">BoatiesMate Prototype — Demo Mode<small>Phase 11</small></div>
+  <header class="brand-header">
+    <div class="brand-header__inner">
+      <img
+        class="brand-logo"
+        src="/boatiesmate-secondary-long-ocean.png"
+        alt="BoatiesMate"
+      />
+      <span class="role-pill role-pill--operator">Operator</span>
+    </div>
+  </header>
+  
+  <div class="muted"><a class="btn-secondary" id="backToInboxLink" href="operator-inbox.html">← Back to Operator Inbox</a></div>
+  <h2>Operator Review – Application Pack</h2>
+  <div class="muted">
+    Operator-friendly review of a booking’s Application Pack (owner, vessel, documents, compliance summary, and Decision Intelligence).
+  </div>
+
+  <div class="card" id="docsCard">
+    <h3 style="margin-top:0;">Compliance Documents</h3>
+    <div class="muted">Read-only. Click “View” to open the document (demo viewer until real PDFs are wired).</div>
+  
+    <div id="docsEmpty" class="muted" style="margin-top:10px;">No documents loaded.</div>
+  
+    <table id="docsTable" style="width:100%; margin-top:10px; border-collapse: collapse; display:none;">
+      <thead>
+        <tr>
+          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Type</th>
+          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Status</th>
+          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Expires</th>
+          <th style="text-align:right; border-bottom:1px solid #eee; padding:8px;">Action</th>
+        </tr>
+      </thead>
+      <tbody id="docsTbody"></tbody>
+    </table>
+  </div>  
+
+  <div id="banner">
+    <div id="bannerTitle"></div>
+    <div id="bannerBody"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div class="k">API Base URL</div>
+      <div>
+        <input id="apiBase" placeholder="Leave blank to use http://localhost:3000" />
+...
+Tip: leave blank for demos (defaults to <span class="pill">http://localhost:3000</span>).
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="k">Booking ID</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input id="bookingId" placeholder="e.g. 4" style="max-width:220px;" />
+        <button id="loadBtn" type="button" class="btn-accent">Load Application Pack</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="k">Eligibility</div>
+      <div>
+        <span id="eligibilityBadge" class="badge warn">Not loaded</span>
+        <div id="eligibilityNote" class="muted" style="margin-top:4px;"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="k">Decision Intelligence</div>
+      <div id="decisionIntelBox" class="muted">Loading decision…</div>
+    </div>
+  </div>
+
+  <div id="cardsArea" style="display:none;">
+    <div class="card">
+      <div class="k" style="margin-bottom:8px;">Booking</div>
+      <div id="bookingCard" class="grid2"></div>
+    </div>
+
+    <div class="card" id="decisionSummaryCard" style="display:none;">
+        <div class="k" style="margin-bottom:8px;">Decision Summary</div>
+      
+        <div id="decisionSummaryBox" class="grid2"></div>
+      
+        <div class="muted" style="margin-top:8px;">
+          This section is read-only and reflects the booking audit trail (who decided, when, and why).
+        </div>
+      </div>      
+
+    <div class="card">
+      <div class="k" style="margin-bottom:8px;">Owner</div>
+      <div id="ownerCard" class="grid2"></div>
+    </div>
+
+    <div class="card">
+      <div class="k">Approve / Decline (Operator)</div>
+      <div class="muted" style="margin-top:4px;">
+        Approve is enabled only when compliance is eligible, booking is pending, and Decision Intel is <span class="pill">APPROVABLE</span>.
+      </div>
+
+      <input id="decisionBookingId" type="hidden" />
+
+      <div class="row" style="margin-top:10px;">
+        <div class="k">Decline reason</div>
+        <div><textarea id="declineReason" rows="2" placeholder="Optional reason shown in audit trail"></textarea></div>
+      </div>
+
+      <div class="actions" style="margin-top:10px;">
+        <button id="approveBtn" class="btn-primary">Approve</button>
+        <button id="declineBtn" class="btn-decline">Decline</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="k" style="margin-bottom:8px;">Raw JSON</div>
+      <pre id="rawJson">{}</pre>
+    </div>
+  </div>
+
+  <script src="operator-review.js"></script>
+
+<script id="phase11BackTs">
+(function(){
+  var a = document.getElementById("backToInboxLink");
+  if (!a) return;
+  var base = "operator-inbox.html";
+  a.href = base + "?ts=" + Date.now();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="styles.css" />
+  <title>BoatiesMate – Boatie Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16px; max-width: 520px; margin: 0 auto; }
+    h2 { margin: 0 0 8px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin: 12px 0; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select, button { width: 100%; padding: 10px; font-size: 16px; margin-top: 6px; }
+    button { cursor: pointer; }
+    .muted { color: #666; font-size: 13px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .status { font-weight: bold; }
+    .good { color: #0a7a0a; }
+    .bad { color: #b00020; }
+    .warn { color: #b06b00; }
+    pre { white-space: pre-wrap; word-break: break-word; background:#fafafa; padding:10px; border-radius:8px; border:1px solid #eee; }
+
+    .tc-box { margin-top: 10px; padding: 10px; border: 1px dashed #ccc; border-radius: 10px; }
+    .tc-row { display: flex; gap: 10px; align-items: flex-start; }
+    .tc-row input[type="checkbox"] { width: 22px; height: 22px; margin-top: 2px; }
+    .tc-row label { margin: 0; font-weight: normal; }
+    .tc-link { display: inline-block; margin-top: 8px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="muted" style="margin-bottom:12px;">
+    <a class="btn-secondary" href="/">← Back to Home</a>
+  </div>
+  <header class="brand-header">
+    <div class="brand-header__inner">
+      <img
+        class="brand-logo"
+        src="/boatiesmate-secondary-long-ocean.png"
+        alt="BoatiesMate"
+      />
+      <span class="role-pill role-pill--boatie">Boatie</span>
+    </div>
+  </header>
+
+  <div class="muted">Mobile-first demo: identity is preloaded. Select dates + marina, review terms, then submit.</div>
+
+  <div class="card">
+    <label>API Base URL</label>
+    <input id="apiBase" placeholder="Leave blank for demo (defaults to same host)" />
+    <div class="muted">Tip: if hosting, put full URL like https://your-host.app</div>
+  </div>
+
+  <div class="card">
+    <div><strong>Preloaded Identity (Demo)</strong></div>
+    <div class="muted" id="identityText">Loading demo identity…</div>
+  </div>
+
+  <div class="card">
+    <label>Marina</label>
+    <select id="marinaId"></select>
+
+    <div class="row">
+      <div>
+        <label>Start Date</label>
+        <input id="startDate" type="date" />
+      </div>
+      <div>
+        <label>End Date</label>
+        <input id="endDate" type="date" />
+      </div>
+    </div>
+
+    <div class="tc-box">
+      <div class="muted"><strong>Marina Terms & Conditions</strong> (demo)</div>
+      <a id="termsLink" class="tc-link" href="terms.html" target="_blank" rel="noopener">View terms & conditions</a>
+
+      <div class="tc-row" style="margin-top:10px;">
+        <input id="tcAccept" type="checkbox" />
+        <label for="tcAccept">
+          I have reviewed and accept the marina’s Terms & Conditions.
+          <div class="muted">Required before submitting a booking request.</div>
+        </label>
+      </div>
+
+      <div class="muted" id="tcHint" style="margin-top:8px;"></div>
+    </div>
+
+    <label class="muted">Compliance</label>
+    <div class="muted" id="complianceText">Assumed valid for demo (hook into real compliance later).</div>
+
+    <button id="submitBtn" class="btn-primary" type="button">
+  Submit Booking Request
+</button>
+      <div id="handoffCta" class="muted" style="margin-top:10px; display:none;">
+        <a class="btn-secondary" href="operator-inbox.html">Go to Operator Inbox →</a>
+      </div>
+<div class="muted" id="submitMsg"></div>
+  <div class="muted" id="jsHeartbeat" style="margin-top:6px;"></div>
+  </div>
+
+  <div class="card">
+<div id="handoff" class="card" style="display:none; margin-top:12px;">
+  <h3 style="margin:0 0 6px 0;">Handoff</h3>
+  <div class="muted">Demo helper panel (Phase 11 hardening). Visible only when the page wants to guide the next step.</div>
+</div>
+
+
+    <div><strong>Booking Status</strong></div>
+    <div class="muted">This will auto-refresh while pending.</div>
+    <div id="statusLine" class="status">Not submitted</div>
+    <div id="decisionLine" class="muted"></div>
+    <div id="debugBlock" style="display:none;">
+      <div class="muted">Debug</div>
+      <pre id="debugPre"></pre>
+    </div>
+  </div>
+
+  <div id="emailCard" class="card" style="display:none; margin-top:12px;">
+    <div><strong>Email notification (simulated)</strong></div>
+    <div class="muted">This is a demo preview. No email is actually sent yet.</div>
+    <div style="margin-top:10px;">
+      <div class="muted"><strong>To:</strong> <span id="emailTo"></span></div>
+      <div class="muted"><strong>Subject:</strong> <span id="emailSubject"></span></div>
+    </div>
+    <pre id="emailBody" style="margin-top:10px;"></pre>
+  </div>
+
+  <script src="boatie-demo.js"></script>
+</body>
+</html>

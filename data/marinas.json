@@ -1,0 +1,7 @@
+[
+  { "id": 1, "name": "Orakei Marina", "region": "Auckland", "status": "active" },
+  { "id": 2, "name": "Gulf Harbour Marina", "region": "Auckland", "status": "active" },
+  { "id": 3, "name": "Westhaven Marina", "region": "Auckland", "status": "active" },
+  { "id": 4, "name": "Bayswater Marina", "region": "Auckland", "status": "active" },
+  { "id": 5, "name": "Pine Harbour Marina", "region": "Auckland", "status": "active" }
+]

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>BoatiesMate – Operator Inbox</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 18px; max-width: 1100px; margin: 0 auto; }
+    h2 { margin: 0 0 10px 0; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+    label { font-weight: bold; display: block; margin-bottom: 4px; }
+    input, select, button { padding: 8px; }
+    input, select { min-width: 220px; }
+    button { cursor: pointer; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-top: 12px; }
+    .muted { color: #666; font-size: 12px; }
+    .pill { display: inline-block; padding: 3px 8px; border: 1px solid #ccc; border-radius: 999px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; vertical-align: top; }
+    th { background: #fafafa; }
+    tr:hover { background: #fcfcfc; }
+    .right { text-align: right; }
+    .jsonBox { white-space: pre; overflow: auto; background: #111; color: #eee; padding: 10px; border-radius: 10px; font-size: 12px; }
+    .warn { color: #9a6a00; }
+
+    /* Phase 5 polish: simple visual distinction */
+    .pill-ok { border-color: #2e7d32; color: #2e7d32; }
+    .pill-warn { border-color: #9a6a00; color: #9a6a00; }
+    .pill-bad { border-color: #b00020; color: #b00020; }
+    .pill-neutral { border-color: #666; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="demo-badge">BoatiesMate Prototype — Demo Mode<small>Phase 11</small></div>
+  <div class="muted" style="margin-bottom:12px;">
+    <a class="btn-secondary" href="index.html">← Back to Home</a>
+  </div>
+  <header class="brand-header">
+    <div class="brand-header__inner">
+      <img
+        class="brand-logo"
+        src="/boatiesmate-secondary-long-ocean.png"
+        alt="BoatiesMate"
+      />
+      <span class="role-pill role-pill--operator">Operator</span>
+    </div>
+  </header>
+  
+  <h2>Operator Inbox</h2>
+  <div class="muted">
+    Lists bookings scoped to the logged-in operator’s marina. Click the link to open the Application Pack.
+  </div>
+  <div style="padding:6px 0; color:#b00020; font-weight:bold;">INBOX VERSION CHECK: 2026-01-28-A</div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>API Base URL</label>
+        <input id="apiBase" value="" placeholder="(optional) e.g. http://localhost:3000" />
+        <div class="muted">Leave blank for same-origin (recommended).</div>
+      </div>
+
+      <div>
+        <label>Status</label>
+        <select id="status">
+          <option value="pending" selected>pending</option>
+          <option value="approved">approved</option>
+          <option value="declined">declined</option>
+          <option value="all">all</option>
+        </select>
+      </div>
+
+      <div style="border:1px solid #ddd; padding:12px; border-radius:8px; margin:12px 0;">
+        <div style="font-weight:bold; margin-bottom:6px;">Operator Login (Prototype)</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; position:relative;">
+          <input id="loginEmail" type="email" style="flex:1; min-width:220px;" value="operator@gulfharbour.example" />
+          <input id="loginPassword" type="password" style="width:180px;" value="letmein123" />          
+          <button id="loginBtn" type="button" class="btn-primary"
+          style="background: var(--ocean, #0b2d4d); border:1px solid var(--ocean, #0b2d4d); color:#fff; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer; white-space:nowrap;">
+          Log In & Load Bookings
+        </button>        
+          <button id="clearTokenBtn" type="button" class="btn-secondary">Clear Token</button>
+        </div>
+        <div id="loginStatus" style="margin-top:8px;" class="muted"></div>
+      </div>
+
+      <div>
+        <label>From (optional)</label>
+        <input id="from" type="date" />
+      </div>
+
+      <div>
+        <label>To (optional)</label>
+        <input id="to" type="date" />
+      </div>
+
+      <div>
+        <button id="btnLoad" class="btn-primary"
+        style="background: var(--ocean, #0b2d4d); border:1px solid var(--ocean, #0b2d4d); color:#fff; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer; white-space:nowrap;">
+        Load Inbox
+      </button>      
+      </div>
+
+      <div style="margin-top:8px;">
+  <button id="btnDevTools" class="btn-secondary" type="button">Developer tools</button>
+  <div id="devToolsWrap" style="display:none; margin-top:8px;">
+    <button id="btnToggleJson" class="btn-secondary" type="button">Toggle Raw JSON</button>
+    <div id="jsonToggleStatus" class="muted" style="margin-top:6px;">Raw JSON panel: hidden</div>
+  </div>
+</div>
+    </div>
+
+    <div id="authMsg" class="muted" style="margin-top:10px;"></div>
+    <div id="tableWrap" style="margin-top:10px;"></div>
+    <div id="jsonWrap" style="margin-top:10px; display:none;"></div>
+  </div>
+
+<script>
+  // ---------- Helpers ----------
+  function qs(id) { return document.getElementById(id); }
+  
+  
+    // Phase 11: Developer tools reveal (hides raw JSON during demos)
+    document.addEventListener("DOMContentLoaded", () => {
+      const devBtn = qs("btnDevTools");
+      const wrap = qs("devToolsWrap");
+      if (devBtn && wrap) {
+        devBtn.addEventListener("click", () => {
+          wrap.style.display = (wrap.style.display === "none" || wrap.style.display === "") ? "block" : "none";
+        });
+
+        // If JSON exists, show the panel when dev tools are opened
+        if (wrap.style.display === "block") {
+          const jw = qs("jsonWrap");
+          if (jw && (jw.innerHTML || "").trim().length > 0) {
+            jw.style.display = "block";
+            const st = qs("jsonToggleStatus");
+            if (st) st.textContent = "Raw JSON panel: visible";
+          }
+        }
+
+      }
+    });
+
+    // Phase 11: ensure Toggle Raw JSON always works (even if other handlers change)
+    const jsonBtn = qs("btnToggleJson");
+    const jsonWrap = qs("jsonWrap");
+    if (jsonBtn && jsonWrap) {
+      jsonBtn.addEventListener("click", () => {
+        jsonWrap.style.display = (jsonWrap.style.display === "none" || jsonWrap.style.display === "") ? "block" : "none";
+        const st = qs("jsonToggleStatus");
+        if (st) st.textContent = "Raw JSON panel: " + (jsonWrap.style.display === "block" ? "visible" : "hidden");
+        if (jsonWrap.style.display === "block") {
+          const hasContent = (jsonWrap.innerHTML || "").trim().length > 0;
+          if (!hasContent) {
+            jsonWrap.innerHTML = "<div class=\"muted\">No JSON captured yet. Click <b>Load Inbox</b> first.</div>";
+          }
+        }
+      });
+    }
+
+function esc(s) {
+    // Avoid replaceAll for maximum compatibility
+    s = String((s === undefined || s === null) ? "" : s);
+    s = s.replace(/&/g, "&amp;");
+    s = s.replace(/</g, "&lt;");
+    s = s.replace(/>/g, "&gt;");
+    s = s.replace(/"/g, "&quot;");
+    s = s.replace(/'/g, "&#39;");
+    return s;
+  }
+
+  function key(v) { return String((v === undefined || v === null) ? "" : v); }
+
+  // API base: prefer the textbox if present, otherwise fall back to localStorage, otherwise default.
+  function apiBase() {
+    var input = qs("apiBase");
+    var v = (input && input.value ? input.value : "").trim();
+
+    if (!v) {
+      v = (localStorage.getItem("apiBaseUrl") || "").trim();
+    }
+    if (!v) {
+  // Default API port (matches index.js default)
+  v = "http://localhost:3000";
+}
+    return v.replace(/\/+$/, "");
+  }
+
+  // Token: accept multiple keys + handle accidental JSON.stringify storage
+  function getToken() {
+    var raw =
+      localStorage.getItem("token") ||
+      localStorage.getItem("operatorToken") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("accessToken") ||
+      "";
+
+    raw = String(raw || "").trim();
+    if (!raw) return "";
+
+    // If token was stored via JSON.stringify it may include quotes
+    try {
+      var parsed = JSON.parse(raw);
+      if (typeof parsed === "string") return parsed.trim();
+    } catch (e) {
+      // ignore
+    }
+    return raw;
+  }
+
+  // Compatibility shim: older code paths still call authToken()
+  function authToken() {
+    return getToken();
+  }
+
+  async function apiGet(path) {
+    const base = apiBase();
+    const url = (base ? (base.replace(/\/$/, "") + path) : path);
+
+    const token = getToken();
+    const headers = {};
+
+    // Send BOTH header styles (keep compatibility), but ensure Bearer is always correct
+    if (token) {
+      headers["Authorization"] = "Bearer " + token;
+      headers["X-Auth-Token"] = token;
+    }
+
+    headers["Content-Type"] = "application/json";
+
+    const res = await fetch(url, { headers });
+    const text = await res.text();
+
+    let data = null;
+    try { data = JSON.parse(text); } catch (e) {}
+
+    if (!res.ok) {
+      const msg = (data && (data.error || data.message)) ? (data.error || data.message) : text;
+      throw new Error(`HTTP ${res.status} ${msg}`);
+    }
+
+    return data;
+  }
+
+  function pickVesselName(v) {
+    if (!v) return "";
+    return v.name || v.vesselName || v.displayName || v.makeModel || "";
+  }
+  function pickMooringName(m) {
+    if (!m) return "";
+    return m.name || m.mooringName || m.code || m.reference || "";
+  }
+  function pickMarinaName(m) {
+    if (!m) return "";
+    return m.name || m.marinaName || m.displayName || "";
+  }
+// ---------- Phase 6: Inbox filter persistence (low-risk) ----------
+function saveInboxFilters() {
+  try {
+    var payload = {
+      status: (qs("status") && qs("status").value) || "pending",
+      from: (qs("from") && qs("from").value) || "",
+      to: (qs("to") && qs("to").value) || ""
+    };
+    localStorage.setItem("operatorInboxFilters", JSON.stringify(payload));
+  } catch (e) {
+    // ignore storage failures
+  }
+}
+
+function loadInboxFiltersIntoUI() {
+  try {
+    var raw = localStorage.getItem("operatorInboxFilters") || "";
+    if (!raw) return;
+
+    var data = null;
+    try { data = JSON.parse(raw); } catch (e2) { data = null; }
+    if (!data) return;
+
+    if (qs("status") && data.status) qs("status").value = String(data.status);
+    if (qs("from") && data.from != null) qs("from").value = String(data.from);
+    if (qs("to") && data.to != null) qs("to").value = String(data.to);
+  } catch (e) {
+    // ignore
+  }
+}
+
+  // ---------- Phase 5: Decision Intel ----------
+  async function fetchDecisionIntel(bookingId) {
+    try {
+      return await apiGet("/api/bookings/" + encodeURIComponent(bookingId) + "/decision-intel");
+    } catch (e) {
+      console.warn("Decision intel fetch failed for booking", bookingId, e.message);
+      return null;
+    }
+  }
+
+  function decisionIntelLabel(intel) {
+  if (!intel) return "UNKNOWN";
+
+  // Preferred v2
+  if (intel.approvable === true) return "APPROVABLE";
+  var c = String(intel.classification || "").toUpperCase();
+  if (c === "TEMPORARY") return "TEMP_UNAVAILABLE";
+  if (c === "STRUCTURAL") return "UNSUITABLE";
+  if (c === "COMPLIANCE") return "NEEDS_COMPLIANCE";
+
+  // Legacy fallback
+  var s = String(intel.status || "").toUpperCase();
+  if (s) return s;
+
+  return "UNKNOWN";
+}
+
+function decisionIntelPillClass(intel) {
+  if (!intel) return "pill-neutral";
+
+  // Preferred v2
+  if (intel.approvable === true) return "pill-ok";
+  var c = String(intel.classification || "").toUpperCase();
+  if (c === "TEMPORARY") return "pill-warn";
+  if (c === "STRUCTURAL") return "pill-bad";
+  if (c === "COMPLIANCE") return "pill-warn";
+
+  // Legacy fallback
+  var s = String(intel.status || "").toUpperCase();
+  if (s === "APPROVABLE") return "pill-ok";
+  if (s.indexOf("TEMP") >= 0) return "pill-warn";
+  if (s.indexOf("UNSUIT") >= 0) return "pill-bad";
+  if (s.indexOf("COMPLI") >= 0) return "pill-warn";
+
+  return "pill-neutral";
+}
+
+  // ---------- Data caches ----------
+  var vesselsById = {};
+  var mooringsById = {};
+  var marinasById = {};
+
+  function unwrapArray(payload, preferredKey) {
+    // Handles: [ ... ] OR { preferredKey: [ ... ] } OR { results: [ ... ] }
+    if (Array.isArray(payload)) return payload;
+    if (payload && preferredKey && Array.isArray(payload[preferredKey])) return payload[preferredKey];
+    if (payload && Array.isArray(payload.results)) return payload.results;
+    if (payload && Array.isArray(payload.items)) return payload.items;
+    // common API wrappers
+    if (payload && Array.isArray(payload.vessels)) return payload.vessels;
+    if (payload && Array.isArray(payload.moorings)) return payload.moorings;
+    if (payload && Array.isArray(payload.marinas)) return payload.marinas;
+    return [];
+  }
+
+  async function loadReferenceCaches() {
+    var vesselsPayload = await apiGet("/api/vessels");
+    var mooringsPayload = await apiGet("/api/moorings");
+    var marinasPayload = await apiGet("/api/marinas");
+
+    var vessels = unwrapArray(vesselsPayload, "vessels");
+    var moorings = unwrapArray(mooringsPayload, "moorings");
+    var marinas = unwrapArray(marinasPayload, "marinas");
+
+    vesselsById = {};
+    vessels.forEach(function(v) { vesselsById[key(v.id)] = v; });
+
+    mooringsById = {};
+    moorings.forEach(function(m) { mooringsById[key(m.id)] = m; });
+
+    marinasById = {};
+    marinas.forEach(function(m) { marinasById[key(m.id)] = m; });
+
+    return {
+      vesselsCount: vessels.length,
+      mooringsCount: moorings.length,
+      marinasCount: marinas.length
+    };
+  }
+
+  async function loadInbox() {
+    var status = qs("status").value;
+    var from = qs("from").value;
+    var to = qs("to").value;
+
+    var params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
+
+    return await apiGet("/api/bookings/inbox?" + params.toString());
+  }
+
+  async function loginOperatorAndStoreToken() {
+    const base = apiBase();
+    const email = (document.getElementById("loginEmail")?.value || "").trim();
+    const password = (document.getElementById("loginPassword")?.value || "").trim();
+    const statusEl = document.getElementById("loginStatus");
+
+    if (statusEl) statusEl.textContent = "Logging in…";
+
+    const res = await fetch(base.replace(/\/+$/, "") + "/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const text = await res.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch (e) {}
+
+    if (!res.ok) {
+      const msg = (data && (data.error || data.message)) ? (data.error || data.message) : text;
+      if (statusEl) statusEl.textContent = `Login failed: HTTP ${res.status} ${msg}`;
+      throw new Error(`Login failed: HTTP ${res.status} ${msg}`);
+    }
+
+    const token = data?.token ? String(data.token) : "";
+    if (!token) {
+      if (statusEl) statusEl.textContent = "Login succeeded but no token returned.";
+      throw new Error("Login succeeded but no token returned.");
+    }
+
+    localStorage.setItem("token", token);
+    if (statusEl) statusEl.textContent = `Login OK. Token stored (starts: ${token.slice(0, 12)}…)`;
+
+    return token;
+  }
+
+  function wireLoginButtons(loadInboxFn) {
+    document.getElementById("loginBtn")?.addEventListener("click", async () => {
+      const statusEl = document.getElementById("loginStatus");
+      try {
+        if (statusEl) statusEl.textContent = "Logging in and loading inbox…";
+        await loginOperatorAndStoreToken();
+        if (typeof loadInboxFn === "function") {
+          await loadInboxFn();
+          if (statusEl) statusEl.textContent = "Inbox loaded.";
+        } else {
+          if (statusEl) statusEl.textContent = "Internal error: loader not wired.";
+        }
+      } catch (e) {
+        console.error(e);
+        if (statusEl) statusEl.textContent = "Error: " + (e && e.message ? e.message : String(e));
+      }
+    });
+
+    document.getElementById("clearTokenBtn")?.addEventListener("click", () => {
+      localStorage.removeItem("token");
+      const statusEl = document.getElementById("loginStatus");
+      if (statusEl) statusEl.textContent = "Token cleared.";
+      qs("authMsg").innerHTML = "<span class='warn'>No operator token found in localStorage.</span> Click <b>Login &amp; Load Inbox</b>.";
+      qs("tableWrap").innerHTML = "";
+      qs("jsonWrap").innerHTML = "";
+    });
+  }
+
+  function showAuthState() {
+    var token = authToken();
+    if (!token) {
+      qs("authMsg").innerHTML = "<span class='warn'>No operator token found in localStorage.</span> Click <b>Login &amp; Load Inbox</b>.";
+      return false;
+    }
+    qs("authMsg").innerHTML = "Operator token detected. Inbox calls will be authenticated.";
+    return true;
+  }
+
+  async function renderTable(data) {
+    var wrap = qs("tableWrap");
+    wrap.innerHTML = "";
+
+    var results = Array.isArray(data) ? data : ((data && (data.results || data.bookings)) ? (data.results || data.bookings) : []);
+    var count = (data && data.count !== undefined && data.count !== null) ? data.count : results.length;
+
+    if (!results.length) {
+      wrap.innerHTML = "<div class='muted' style='margin-top:10px;'>No bookings found for the selected filters.</div>";
+      return;
+    }
+
+    var table = document.createElement("table");
+    table.innerHTML = ""
+      + "<thead>"
+      + "  <tr>"
+      + "    <th>Booking</th>"
+      + "    <th>Dates</th>"
+      + "    <th>Vessel</th>"
+      + "    <th>Mooring / Marina</th>"
+      + "    <th>Decision Intel</th>"
+      + "    <th>Status</th>"
+      + "    <th class='right'>Action</th>"
+      + "  </tr>"
+      + "</thead>"
+      + "<tbody></tbody>";
+
+    var tbody = table.querySelector("tbody");
+
+    // for loop so we can await per-row intel safely
+    for (var i = 0; i < results.length; i++) {
+      var b = results[i];
+
+      var vessel = vesselsById[key(b.vesselId)];
+      var mooring = mooringsById[key(b.mooringId)];
+      var marina = marinasById[key(b.marinaId)];
+
+      var vesselName = pickVesselName(vessel) || ("VesselId: " + b.vesselId);
+      var mooringName = pickMooringName(mooring) || ("MooringId: " + b.mooringId);
+      var marinaName = pickMarinaName(marina) || ("MarinaId: " + b.marinaId);
+
+      var bookingCell = "<div><strong>#" + esc(b.id) + "</strong></div><div class='muted'>OwnerId: " + esc(b.ownerId) + "</div>";
+      var datesCell = "<div>" + esc(b.startDate) + " \u2192 " + esc(b.endDate) + "</div>";
+      var vesselCell = "<div>" + esc(vesselName) + "</div><div class='muted'>(id: " + esc(b.vesselId) + ")</div>";
+      var mooringMarinaCell = "<div>" + esc(mooringName) + "</div><div class='muted'>" + esc(marinaName) + "</div>";
+      var statusCell = "<span class='pill'>" + esc(b.status || "unknown") + "</span>";
+      var actionCell = "<a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "'>Open Application Pack \u2192</a>";
+
+      var intel = await fetchDecisionIntel(b.id);
+      var intelText = decisionIntelLabel(intel);
+      var pillClass = decisionIntelPillClass(intel);
+
+    // Show the top reason (first blocker) as a detail line and tooltip
+var reasonText = "No blockers";
+
+// Blockers ONLY (demo polish)
+if (intel && intel.blockingReasons && intel.blockingReasons.length) {
+  var br = intel.blockingReasons[0];
+  var meta = br.meta || {};
+
+  // Special-case overlap booking to match Review/demo wording
+  if (br.code === "OVERLAP_BOOKING" && meta.overlapBookingIds && meta.overlapBookingIds.length) {
+    reasonText = "Overlaps approved booking(s): " + meta.overlapBookingIds.join(", ");
+  } else {
+    reasonText = br.message || "Blocked";
+  }
+}
+// Legacy fallback (if intel ever comes back as {status,reasons})
+else if (intel && intel.reasons && intel.reasons.length) {
+  reasonText = String(intel.reasons[0] || "Blocked");
+}
+
+// NOTE: warnings intentionally NOT shown in Inbox (demo polish)
+
+
+      var tr = document.createElement("tr");
+      tr.innerHTML = ""
+        + "<td>" + bookingCell + "</td>"
+        + "<td>" + datesCell + "</td>"
+        + "<td>" + vesselCell + "</td>"
+        + "<td>" + mooringMarinaCell + "</td>"
+        + "<td>"
+        +   "<span class='pill " + esc(pillClass) + "' title='" + esc(reasonText) + "'>" + esc(intelText) + "</span>"
+        +   "<div class='muted'>" + esc(reasonText) + "</div>"
+        + "</td>"
+        + "<td>" + statusCell + "</td>"
+        + "<td class='right'>" + actionCell + "</td>";
+
+      tbody.appendChild(tr);
+    }
+
+    wrap.appendChild(table);
+    wrap.insertAdjacentHTML("beforeend", "<div class='muted' style='margin-top:8px;'>Showing " + esc(count) + " booking(s).</div>");
+  }
+
+  function renderJsonBox(obj) {
+    qs("jsonWrap").innerHTML = "<div class='jsonBox'>" + esc(JSON.stringify(obj, null, 2)) + "</div>";
+  }
+
+      // Phase 11: update status when JSON is refreshed
+      var st = qs("jsonToggleStatus");
+      if (st) {
+        var ts = new Date();
+        st.textContent = "Raw JSON panel: " + ((qs("jsonWrap").style.display === "block") ? "visible" : "hidden") + " (updated " + ts.toLocaleTimeString() + ")";
+      }
+
+  async function loadAll() {
+    var ok = showAuthState();
+    if (!ok) return;
+    saveInboxFilters();
+
+    try {
+
+      var refHealth = await loadReferenceCaches();
+      var inbox = await loadInbox();
+
+      await renderTable(inbox);
+      renderJsonBox({ referenceCacheHealth: refHealth, inbox: inbox });
+
+    } catch (e) {
+      console.error(e);
+      var wrap = qs("tableWrap");
+      wrap.innerHTML = ""
+        + "<div class='card' style='border-color:#f0c36d;'>"
+        + "  <div><strong>Inbox load failed</strong></div>"
+        + "  <div style='margin-top:6px;'>" + esc(e.message || e) + "</div>"
+        + "</div>";
+      renderJsonBox({ error: String(e.message || e) });
+    }
+  }
+
+  // ---------- Wire UI ----------
+  wireLoginButtons(loadAll);
+
+  // Manual “Load Inbox” button
+  qs("btnLoad").addEventListener("click", async () => {
+    await loadAll();
+  });
+ // ---------- Phase 6: deterministic behaviour on open ----------
+loadInboxFiltersIntoUI();
+
+// Auto-load on open: ONLY if we already have a token
+showAuthState();
+
+if (getToken()) {
+  loadAll();
+} else {
+  qs("tableWrap").innerHTML =
+    "<div class='muted' style='margin-top:10px;'>Not logged in. Click <b>Login &amp; Load Inbox</b>.</div>";
+}
+
+// Auto-reload whenever filters change (removes uncertainty after decisions)
+qs("status")?.addEventListener("change", () => { saveInboxFilters(); loadAll(); });
+qs("from")?.addEventListener("change", () => { saveInboxFilters(); loadAll(); });
+qs("to")?.addEventListener("change", () => { saveInboxFilters(); loadAll(); });
+
+</script>
+</body>
+</html>

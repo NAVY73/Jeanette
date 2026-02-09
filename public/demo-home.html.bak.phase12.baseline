@@ -1,0 +1,110 @@
+cd /Users/jeanettecahill/projects/BoatiesMate-Prototype && \
+cat > public/demo-home.html <<'EOF'
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BoatiesMate – Demo Control Panel</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .wrap { max-width: 980px; margin: 0 auto; padding: 18px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 840px){ .grid { grid-template-columns: 1fr 1fr; } }
+    .card { border: 1px solid var(--ocean); border-radius: 12px; padding: 14px; background: #fff; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .row > * { flex: 1 1 auto; }
+    label { font-weight: 700; display:block; margin: 8px 0 6px; }
+    input, select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #cfd8e3; }
+    .muted { opacity: 0.8; font-size: 0.95rem; }
+    .demo-footer { margin-top: 16px; font-size: 0.9rem; opacity: 0.85; }
+    .pill { display:inline-block; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--ocean); font-weight: 700; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="row" style="justify-content: space-between;">
+      <div>
+        <h2 style="margin: 0 0 6px;">BoatiesMate – Demo Control Panel</h2>
+        <div class="muted">Launch key demo pages, set operator context, jump to a booking, and reset safely for investor demos.</div>
+      </div>
+      <div class="pill">PHASE 12 – DEMO</div>
+    </div>
+
+    <div class="grid" style="margin-top: 14px;">
+      <div class="card">
+        <h3 style="margin-top: 0;">Quick Launch</h3>
+        <p class="muted">Use these during live demos to keep the flow tight.</p>
+        <div class="row">
+          <button class="btn-primary" id="btnBoatie">Launch Boatie Demo</button>
+          <button class="btn-secondary" id="btnInbox">Launch Operator Inbox</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top: 0;">Operator Selector</h3>
+        <p class="muted">Sets the operator context used by the Operator Inbox (remembered).</p>
+
+        <label for="operatorSelect">Operator / Marina</label>
+        <select id="operatorSelect">
+          <option value="2">Gulf Harbour (marinaId 2)</option>
+          <option value="3">Westhaven (marinaId 3)</option>
+        </select>
+
+        <div class="row" style="margin-top: 12px;">
+          <button class="btn-accent" id="btnSetOperator">Set Operator</button>
+          <button class="btn-secondary" id="btnOpenInboxWithOperator">Set + Open Inbox</button>
+        </div>
+
+        <div class="muted" id="operatorStatus" style="margin-top: 10px;">Not set yet.</div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top: 0;">Open Operator Review</h3>
+        <p class="muted">Jump straight to the Application Pack review screen by Booking ID.</p>
+
+        <label for="bookingId">Booking ID</label>
+        <input id="bookingId" placeholder="e.g., 101" inputmode="numeric" />
+
+        <div class="row" style="margin-top: 12px;">
+          <button class="btn-primary" id="btnOpenReview">Open Review</button>
+          <button class="btn-secondary" id="btnOpenDocViewer">Open Docs Viewer</button>
+        </div>
+
+        <div class="muted" style="margin-top: 10px;">
+          Tip: this uses <code>operator-review.html?bookingId=...</code>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top: 0;">Demo Reset (Safe)</h3>
+        <p class="muted">
+          Restores demo bookings to a clean baseline (for presentations).
+          This will call <code>POST /api/demo/reset</code>.
+        </p>
+
+        <label for="resetConfirm">Type <b>RESET</b> to enable</label>
+        <input id="resetConfirm" placeholder="RESET" />
+
+        <div class="row" style="margin-top: 12px;">
+          <button class="btn-decline" id="btnReset" disabled>Reset Demo Data</button>
+          <button class="btn-secondary" id="btnResetHelp">How reset works</button>
+        </div>
+
+        <div class="muted" id="resetStatus" style="margin-top: 10px;">Reset is locked.</div>
+      </div>
+    </div>
+
+    <div class="demo-footer">
+      <a href="/demo-home.html">Demo Home</a> •
+      <a href="/boatie-demo.html">Boatie Demo</a> •
+      <a href="/operator-inbox.html">Operator Inbox</a>
+      <div style="margin-top: 10px;">BoatiesMate Prototype — Phase 12 Control Panel</div>
+    </div>
+  </div>
+
+  <script src="/demo-home.js"></script>
+</body>
+</html>
+EOF

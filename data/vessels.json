@@ -1,0 +1,36 @@
+[
+    {
+      "id": 1,
+      "ownerId": 1,
+      "name": "Koru Dream",
+      "type": "Keeler",
+      "lengthMetres": 11.5,
+      "beamMetres": 3.8,
+      "draftMetres": 1.9,
+      "registration": "NZ12345",
+      "homePort": "Auckland"
+    },
+    {
+      "id": 2,
+      "ownerId": 1,
+      "name": "Harbour Breeze",
+      "type": "Launch",
+      "lengthMetres": 9.2,
+      "beamMetres": 3.1,
+      "draftMetres": 1.2,
+      "registration": "NZ67890",
+      "homePort": "Gulf Harbour"
+    },
+    {
+      "id": 3,
+      "ownerId": 2,
+      "name": "Sea Mist",
+      "type": "Keeler",
+      "lengthMetres": 10.0,
+      "beamMetres": 3.4,
+      "draftMetres": 1.7,
+      "registration": "NZ24680",
+      "homePort": "Whangaparāoa"
+    }
+  ]
+  

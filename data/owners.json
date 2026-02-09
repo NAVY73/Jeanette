@@ -1,0 +1,19 @@
+[
+    {
+      "id": 1,
+      "firstName": "Wayne",
+      "lastName": "Burtton",
+      "email": "wayne@example.com",
+      "phone": "+64-21-000-0001",
+      "homePort": "Auckland"
+    },
+    {
+      "id": 2,
+      "firstName": "Jeanette",
+      "lastName": "Cahill",
+      "email": "jeanette@example.com",
+      "phone": "+64-21-000-0002",
+      "homePort": "Whangaparāoa"
+    }
+  ]
+  

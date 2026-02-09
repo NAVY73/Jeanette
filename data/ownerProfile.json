@@ -1,0 +1,15 @@
+{
+  "id": 1,
+  "fullName": "Wayne Burtton",
+  "email": "wbburtton@gmail.com",
+  "phone": "021397654",
+  "addressLine1": "117 Burgess Rd, Ostend",
+  "addressLine2": "",
+  "city": "Auckland",
+  "region": "Auckland",
+  "postcode": "1081",
+  "emergencyContactName": "Wayne Burtton",
+  "emergencyContactPhone": "027559933",
+  "createdAt": "2026-01-20T02:16:48.358Z",
+  "updatedAt": "2026-01-20T02:16:48.358Z"
+}

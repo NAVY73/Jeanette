@@ -1,0 +1,358 @@
+/* BoatiesMate Phase 9 — mobile-friendly baseline */
+:root{
+    --border:#e6e6e6;
+    --muted:#666;
+    --bg:#fafafa;
+    --link:#2b5cab;
+    --ok:#2e7d32;
+    --warn:#b26a00;
+    --err:#b00020;
+    --ocean:#0b2d4d;
+    --sunset:#f4a259;
+  }
+  
+  *{ box-sizing:border-box; }
+  
+  html, body{
+    margin:0;
+    padding:0;
+    background:var(--bg);
+    color:#111;
+    font-family: Arial, sans-serif;
+  }
+  
+  body{
+    -webkit-text-size-adjust:100%;
+  }
+  
+  a{ color:var(--link); }
+  
+  .container{
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+  
+  .card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  
+  h1,h2,h3{
+    margin: 0 0 10px;
+  }
+  
+  p{ color: var(--muted); line-height: 1.4; }
+  
+  label{
+    display:block;
+    margin-top:12px;
+    font-weight:700;
+  }
+  
+  input, select, textarea, button{
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:16px; /* important: prevents iOS zoom on focus */
+    background:#fff;
+  }
+  
+  textarea{ min-height: 90px; }
+  
+  button, .btn{
+    display:inline-block;
+    width:100%;
+    padding:14px 12px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#fff;
+    font-weight:800;
+    font-size:16px;
+    cursor:pointer;
+    text-decoration:none;
+    text-align:center;
+  }
+  
+  button:hover, .btn:hover{ border-color:#cfcfcf; }
+  
+  .row{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  
+  .row > *{
+    flex: 1 1 240px;
+  }
+  
+  /* Mobile-friendly tables: horizontal scroll instead of squashing */
+  .table-wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling: touch;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#fff;
+  }
+  
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width: 560px; /* keeps columns readable on phones */
+  }
+  
+  th, td{
+    padding:10px;
+    border-bottom:1px solid #f2f2f2;
+    text-align:left;
+    vertical-align:top;
+  }
+  
+  th{
+    font-size:13px;
+    color:#444;
+    background:#fafafa;
+  }
+  
+  .small{ font-size:12px; color:var(--muted); }
+  .right{ text-align:right; }
+  
+  /* Safari-safe: disable sticky bars (prevents occasional click-blocking after DOM updates) */
+.sticky-top{
+  position: static; /* was sticky */
+  top: auto;
+  z-index: auto;
+  background: var(--bg);
+  border-bottom:1px solid var(--border);
+  pointer-events: auto;
+}
+  
+  .topbar{
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  
+  .topbar a{
+    text-decoration:none;
+    font-weight:700;
+  }
+  
+  /* Reduce heavy shadows on older machines */
+  @media (prefers-reduced-motion: reduce){
+    *{ scroll-behavior:auto !important; }
+  }
+  /* Brand header */
+.brand-header {
+  background: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.brand-header__inner {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand-logo {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+/* Role pill */
+.role-pill {
+  font-size: 12px;
+  line-height: 1;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.04);
+  color: rgba(0,0,0,0.75);
+  font-weight: 600;
+}
+
+.role-pill--operator {
+  /* subtle distinction */
+  background: rgba(0,0,0,0.06);
+}
+
+.role-pill--boatie {
+  background: rgba(0,0,0,0.03);
+}
+/* =========================================================
+   Phase 10 — Brand Button Accents (Minimal + Demo-Safe)
+   Ocean = primary action
+   Sunset = secondary highlight
+   Decline = danger
+   ========================================================= */
+
+   .btn-primary{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--ocean);
+  
+    background: var(--ocean);
+    color: #fff;
+    font-weight: 700;
+    line-height: 1.1;
+  
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+  
+  .btn-primary:hover{ opacity: 0.92; }
+  .btn-primary:active{ transform: translateY(1px); }
+  
+  /* Phase 10 safety: prevent any accidental invisible layer from blocking clicks */
+.brand-header { position: relative; z-index: 1; }
+.brand-header__inner { position: relative; z-index: 1; }
+/* Safety: never block clicks globally */
+body { pointer-events: auto; }
+/* Phase 10 safety: ensure header never blocks page clicks */
+.brand-header { pointer-events: none; }
+.brand-header__inner, .brand-header__inner * { pointer-events: auto; }
+/* Phase 10 Safari-safe: consistent control boxes in flex rows */
+input, select, button {
+  box-sizing: border-box;
+}
+/* Phase 10 final override: ensure primary buttons always look branded */
+button.btn-primary, .btn-primary{
+  background: var(--ocean) !important;
+  border: 1px solid var(--ocean) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+}
+
+button.btn-primary:hover, .btn-primary:hover{
+  opacity: 0.92 !important;
+}
+
+/* =========================================================
+   Phase 11 – Button consistency helpers
+   Adds missing button variants used across demo pages.
+   Safe to append (does not overwrite existing styles).
+   ========================================================= */
+
+.btn-accent{
+  display: inline-block;
+  background: var(--sunset);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-decline{
+  display: inline-block;
+  background: #b00020; /* accessible "danger" red */
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-secondary{
+  display: inline-block;
+  background: #eef2f6;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+
+/* Backward compatibility (some pages used btn-approve earlier) */
+.btn-approve{ background: var(--ocean); color:#fff; border:none; border-radius:12px; padding:10px 14px; font-weight:700; cursor:pointer; text-decoration:none; text-align:center; }
+
+/* Hover/active polish to match btn-primary feel */
+.btn-accent:hover, .btn-decline:hover, .btn-secondary:hover, .btn-approve:hover{ opacity: 0.92; }
+.btn-accent:active, .btn-decline:active, .btn-secondary:active, .btn-approve:active{ transform: translateY(1px); }
+
+
+/* =========================================================
+   Phase 11 – Demo Mode badge/footer
+   ========================================================= */
+.demo-badge{
+  pointer-events: none;
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 9999;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.10);
+}
+.demo-badge small{
+  display:block;
+  font-weight: 600;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+/* Phase 11 – Raw JSON panel readability */
+.jsonBox{
+  border: 1px solid #cbd5e1;
+  background: #0b1220;
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* Phase 11 – Hard guarantee: overlays never block clicks */
+.demo-badge,
+.brand-header {
+  pointer-events: none !important;
+}
+
+/* Phase 11 – Diagnostics: ensure submit button is always clickable */
+#submitBtn{
+  position: relative;
+  z-index: 99999;
+}

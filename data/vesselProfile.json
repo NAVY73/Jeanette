@@ -1,0 +1,18 @@
+{
+  "id": 1,
+  "ownerId": 1,
+  "name": "Rainy Day",
+  "type": "Catamaran",
+  "make": "Leopard ",
+  "model": "40",
+  "registrationNumber": "9796554",
+  "homePort": "Auckland",
+  "lengthOverallM": 40,
+  "maxInclusiveLengthM": 38.5,
+  "beamM": 12,
+  "draftM": 3.5,
+  "hasShorePower": true,
+  "notes": "Mast height is 12 metres.",
+  "createdAt": "2026-01-20T02:21:27.244Z",
+  "updatedAt": "2026-01-20T02:21:27.244Z"
+}

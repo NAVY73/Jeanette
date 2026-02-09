@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "email": "operator@gulfharbour.example",
+    "password": "letmein123",
+    "name": "Gulf Harbour Operator",
+    "role": "marina_operator",
+    "marinaId": 2,
+    "status": "active"
+  },
+  {
+    "id": 2,
+    "email": "admin@boatiesmate.example",
+    "password": "admin123",
+    "name": "BoatiesMate Admin",
+    "role": "admin",
+    "marinaId": null,
+    "status": "active"
+  },
+  {
+    "id": 3,
+    "email": "operator@westhaven.example",
+    "password": "letmein123",
+    "name": "Westhaven Operator",
+    "role": "marina_operator",
+    "marinaId": 3,
+    "status": "active"
+  }
+]

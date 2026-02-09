@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BoatiesMate – Booking (Prototype)</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 520px; }
+    h2 { margin-top: 0; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, select, textarea, button { width: 100%; padding: 8px; margin-top: 6px; box-sizing: border-box; }
+    button { margin-top: 14px; cursor: pointer; }
+    .row { display: flex; gap: 10px; }
+    .row > div { flex: 1; }
+    pre { background: #f5f5f5; padding: 10px; margin-top: 14px; font-size: 12px; white-space: pre-wrap; }
+    .card { border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-top: 14px; }
+    .hint { font-size: 12px; color: #444; margin-top: 6px; }
+    code { background: #f0f0f0; padding: 1px 4px; border-radius: 4px; }
+    .field-error { outline: 2px solid #b00020; outline-offset: 1px; }
+
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #ddd; background:#f7f7f7; }
+    .badge-strong { border-color:#bcd; background:#eef6ff; }
+    .section-title { margin: 10px 0 6px 0; font-weight: bold; }
+    .small { font-size: 12px; color:#444; }
+    .kv { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+    .kv span { font-size:12px; color:#444; }
+    details { margin-top: 8px; }
+    details > summary { cursor: pointer; font-size: 12px; color:#2b5cab; }
+  </style>
+</head>
+<body>
+
+<h2>BoatiesMate – Prototype Booking</h2>
+
+<div class="card">
+  <label>API Base URL</label>
+  <input type="text" id="apiBase" value="http://localhost:3000" />
+
+  <label>Marina ID (filter moorings)</label>
+  <input type="number" id="marinaId" value="2" min="1" />
+
+  <button id="loadMooringsBtn" type="button">Load Moorings</button>
+  <div class="hint">
+    Loads from <code>/api/moorings?marinaId=…</code> (matches your working curl).
+  </div>
+
+  <label>Mooring</label>
+  <select id="mooringId" required>
+    <option value="">Click “Load Moorings” first…</option>
+  </select>
+</div>
+
+<div class="card">
+  <h3 style="margin: 0 0 6px 0;">Search Availability</h3>
+
+  <div class="hint" style="margin-bottom: 10px;">
+    Calls <code>GET /api/availability</code> and returns suitable, available moorings ranked by score.
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Marina ID</label>
+      <input type="number" id="availMarinaId" value="2" min="1" />
+    </div>
+    <div>
+      <label>Vessel</label>
+
+      <select id="availVesselId" required>
+        <option value="">Loading vessels…</option>
+      </select>
+
+      <button id="reloadVesselsBtn" type="button">Reload Vessels</button>
+      <div class="hint">Loads from <code>/api/vessels</code> using the API Base URL above.</div>
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Start Date</label>
+      <input type="date" id="availStartDate" required />
+    </div>
+    <div>
+      <label>End Date</label>
+      <input type="date" id="availEndDate" required />
+    </div>
+  </div>
+
+  <label>Block statuses</label>
+  <select id="availBlockStatuses">
+    <option value="approved" selected>approved (recommended for customer search)</option>
+    <option value="pending,approved">pending + approved (strict)</option>
+  </select>
+
+  <div class="row">
+    <div>
+      <button id="availSearchBtn" type="button">Search Availability</button>
+    </div>
+    <div>
+      <button id="availClearBtn" type="button">Clear results</button>
+    </div>
+  </div>  
+
+  <div id="availSummary" class="hint"></div>
+  <div id="availResults"></div>
+</div>
+
+<div class="card">
+  <h3 style="margin: 0 0 6px 0;">Create Booking (Owner)</h3>
+
+  <div class="row">
+    <div>
+      <label>Owner ID</label>
+      <input type="number" id="ownerId" value="2" min="1" required />
+    </div>
+    <div>
+      <label>Vessel ID</label>
+      <input type="number" id="vesselId" value="3" min="1" required />
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Start Date</label>
+      <input type="date" id="startDate" required />
+    </div>
+    <div>
+      <label>End Date</label>
+      <input type="date" id="endDate" required />
+    </div>
+  </div>
+
+  <label>Notes (optional)</label>
+  <textarea id="notes" rows="3" placeholder="e.g., Visitor booking – Gulf Harbour"></textarea>
+
+  <button id="createBtn" type="button">Create Booking</button>
+
+  <div class="hint">
+    Submits JSON to <code>POST /api/bookings</code>. A new booking ID is auto-copied into the approval box below.
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin: 0 0 6px 0;">Approve Booking (Operator)</h3>
+
+  <label>Operator Token (paste from your Terminal TOKEN)</label>
+  <input type="text" id="token" placeholder="Paste token here (no 'Bearer ' prefix)" />
+
+  <label>Booking ID to approve</label>
+  <input type="number" id="approveBookingId" min="1" placeholder="e.g., 4" />
+
+  <button id="approveBtn" type="button">Approve Booking</button>
+  <button id="declineBtn" type="button">Decline Booking</button>
+
+  <div class="hint">
+    Calls <code>POST /api/bookings/:id/approve</code> with <code>Authorization: Bearer &lt;token&gt;</code>.
+  </div>
+</div>
+
+<div id="banner" class="card" style="display:none; border-left: 6px solid #888;">
+  <div id="bannerTitle" style="font-weight:bold;"></div>
+  <div id="bannerBody" style="margin-top:6px;"></div>
+</div>
+
+<pre id="result">Ready.</pre>
+
+<script>
+  const resultEl = document.getElementById('result');
+  const mooringSelect = document.getElementById('mooringId');
+  const bannerEl = document.getElementById('banner');
+  const bannerTitleEl = document.getElementById('bannerTitle');
+  const bannerBodyEl = document.getElementById('bannerBody');
+
+  function clearBanner() {
+    bannerEl.style.display = 'none';
+    bannerEl.style.borderLeftColor = '#888';
+    bannerTitleEl.textContent = '';
+    bannerBodyEl.innerHTML = '';
+  }
+  
+  function showBanner(kind, title, htmlBody) {
+    // kind: 'success' | 'warn' | 'error' | 'info'
+    const colors = {
+      success: '#2e7d32',
+      warn: '#b26a00',
+      error: '#b00020',
+      info: '#2b5cab',
+    };
+
+    bannerEl.style.display = 'block';
+    bannerEl.style.borderLeftColor = colors[kind] || '#888';
+    bannerTitleEl.textContent = title;
+    bannerBodyEl.innerHTML = htmlBody || '';
+  }
+
+  function esc(s) {
+    return String(s)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function ymd(d) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function renderReasonsList(reasons) {
+    if (!Array.isArray(reasons) || reasons.length === 0) return '';
+    const items = reasons.map(r => `<li>${esc(r)}</li>`).join('');
+    return `<div style="margin-top:8px;"><div style="font-weight:bold;">Why it failed</div><ul style="margin:6px 0 0 18px;">${items}</ul></div>`;
+  }
+
+  function renderAlternativesAsResults(alternatives, contextLabel) {
+    if (!Array.isArray(alternatives) || alternatives.length === 0) return;
+
+    const payloadLike = {
+      count: alternatives.length,
+      results: alternatives.map(a => ({
+        mooringId: a.mooringId,
+        name: a.name || `Mooring ${a.mooringId}`,
+        type: a.type || a.mooringType || null,
+        maxLengthMetres: a.maxLengthMetres ?? null,
+        maxDraftMetres: a.maxDraftMetres ?? null,
+        score: a.score ?? null,
+        reason: a.reason || 'Alternative',
+      })),
+      diagnostics: null,
+    };
+
+    const summaryEl = document.getElementById('availSummary');
+    if (summaryEl) summaryEl.textContent = contextLabel || 'Suggested alternatives (click Select).';
+
+    renderAvailabilityResults(payloadLike);
+  }
+
+  function apiBase() {
+    const v = document.getElementById('apiBase').value.trim();
+    return v.replace(/\/+$/, '');
+  }
+
+  function show(obj) {
+    resultEl.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+  }
+
+  async function fetchJson(url, options) {
+    let res;
+    try {
+      res = await fetch(url, options);
+    } catch (e) {
+      throw { type: 'FETCH_ERROR', message: e?.message || String(e), url };
+    }
+
+    const ct = res.headers.get('content-type') || '';
+    const isJson = ct.includes('application/json');
+    const body = isJson ? await res.json() : await res.text();
+
+    if (!res.ok) {
+      throw { type: 'HTTP_ERROR', status: res.status, url, body };
+    }
+    return body;
+  }
+
+ // Patch B (fixed): de-duplicate moorings loads + per-marina cache
+// - Cache is keyed by marinaId
+// - In-flight requests are keyed by marinaId (prevents cross-marina contamination)
+const mooringsInFlightByMarina = new Map(); // marinaId -> Promise<data>
+const mooringsCacheByMarina = new Map();    // marinaId -> data
+
+async function loadMoorings({ silent = false, force = false } = {}) {
+  const base = apiBase();
+  const marinaId = Number(document.getElementById('marinaId').value);
+
+  if (!base) {
+    if (!silent) show('API Base URL is blank. Set it to http://localhost:3000');
+    return;
+  }
+  if (!Number.isFinite(marinaId) || marinaId <= 0) {
+    if (!silent) show('Enter a valid Marina ID (e.g., 2).');
+    return;
+  }
+
+  // If we have cached data for THIS marina and not forcing, just render it.
+  if (!force && mooringsCacheByMarina.has(marinaId)) {
+    renderMooringsToSelect(mooringsCacheByMarina.get(marinaId), { silent, marinaId });
+    return;
+  }
+
+  // If a request is already in-flight for THIS marina, await it.
+  if (mooringsInFlightByMarina.has(marinaId)) {
+    const data = await mooringsInFlightByMarina.get(marinaId);
+    // Only render if the UI still points at the same marinaId
+    const currentMarinaId = Number(document.getElementById('marinaId').value);
+    if (currentMarinaId === marinaId) {
+      renderMooringsToSelect(data, { silent, marinaId });
+      if (!silent) show({ message: 'Moorings loaded', marinaId, count: (data.moorings || []).length });
+    }
+    return;
+  }
+
+  const url = `${base}/api/moorings?marinaId=${marinaId}`;
+  if (!silent) show({ message: 'Loading moorings…', url });
+
+  const p = (async () => {
+    const data = await fetchJson(url);
+    mooringsCacheByMarina.set(marinaId, data);
+    return data;
+  })();
+
+  mooringsInFlightByMarina.set(marinaId, p);
+
+  try {
+    const data = await p;
+
+    // Only render if the UI still points at the same marinaId
+    const currentMarinaId = Number(document.getElementById('marinaId').value);
+    if (currentMarinaId === marinaId) {
+      renderMooringsToSelect(data, { silent, marinaId });
+      if (!silent) show({ message: 'Moorings loaded', marinaId, count: (data.moorings || []).length });
+    }
+  } finally {
+    mooringsInFlightByMarina.delete(marinaId);
+  }
+}
+
+function renderMooringsToSelect(data, { silent = false, marinaId = null } = {}) {
+  const moorings = data?.moorings || [];
+  const mid = marinaId ?? Number(document.getElementById('marinaId').value);
+
+  mooringSelect.innerHTML = '';
+
+  if (moorings.length === 0) {
+    mooringSelect.innerHTML = '<option value="">No moorings found</option>';
+    if (!silent) show({ message: 'No moorings matched', marinaId: mid, count: 0 });
+    return;
+  }
+
+  for (const m of moorings) {
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = `${m.name} (ID ${m.id}, type ${m.type})`;
+    mooringSelect.appendChild(opt);
+  }
+}
+
+  function renderMooringsToSelect(data, { silent = false } = {}) {
+    const marinaId = Number(document.getElementById('marinaId').value);
+    const moorings = data?.moorings || [];
+
+    mooringSelect.innerHTML = '';
+
+    if (moorings.length === 0) {
+      mooringSelect.innerHTML = '<option value="">No moorings found</option>';
+      if (!silent) show({ message: 'No moorings matched', marinaId });
+      return;
+    }
+
+    for (const m of moorings) {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `${m.name} (ID ${m.id}, type ${m.type})`;
+      mooringSelect.appendChild(opt);
+    }
+  }
+
+  async function createBooking() {
+    clearBanner();
+
+    const base = apiBase();
+    const payload = {
+      ownerId: Number(document.getElementById('ownerId').value),
+      vesselId: Number(document.getElementById('vesselId').value),
+      mooringId: Number(document.getElementById('mooringId').value),
+      startDate: document.getElementById('startDate').value,
+      endDate: document.getElementById('endDate').value,
+      notes: document.getElementById('notes').value || ''
+    };
+
+    if (!base) return show('API Base URL is blank. Set it to http://localhost:3000');
+
+    show({ message: 'Creating booking…', url: `${base}/api/bookings`, payload });
+
+    try {
+      const data = await fetchJson(`${base}/api/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const newId = data?.booking?.id;
+      if (newId) document.getElementById('approveBookingId').value = newId;
+
+      showBanner(
+        'success',
+        'Booking created',
+        `<div>Booking ID <strong>${esc(newId)}</strong> created as <strong>${esc(data?.booking?.status || '')}</strong>.</div>`
+      );
+
+      show(data);
+      return;
+    } catch (err) {
+      const status = err?.status;
+      const body = err?.body;
+
+      show({ error: 'Create booking failed', status, body });
+      showBanner('error', 'Booking failed', `<div>Unexpected error.</div>`);
+
+      if (status === 409) {
+        showBanner(
+          'warn',
+          'Cannot create booking: dates not available',
+          `<div>The selected mooring is not available for those dates.</div>`
+        );
+
+        if (body?.conflictsWith?.length) {
+          const conflictsHtml = body.conflictsWith
+            .map(c => `<li>ID ${esc(c.id)} — ${esc(c.startDate)} to ${esc(c.endDate)} (${esc(c.status)})</li>`)
+            .join('');
+          bannerBodyEl.innerHTML += `<div style="margin-top:8px;"><div style="font-weight:bold;">Conflicts with</div><ul style="margin:6px 0 0 18px;">${conflictsHtml}</ul></div>`;
+        }
+
+        if (Array.isArray(body?.alternatives) && body.alternatives.length > 0) {
+          renderAlternativesAsResults(body.alternatives, 'Conflict detected — suggested alternatives (click Select).');
+          return;
+        }
+
+        try {
+          document.getElementById('availMarinaId').value = String(document.getElementById('marinaId').value);
+          document.getElementById('availVesselId').value = String(document.getElementById('vesselId').value);
+          document.getElementById('availStartDate').value = document.getElementById('startDate').value;
+          document.getElementById('availEndDate').value = document.getElementById('endDate').value;
+          document.getElementById('availBlockStatuses').value = 'pending,approved';
+          await searchAvailability();
+        } catch (_) {}
+
+        return;
+      }
+
+      if (status === 422) {
+        const reasonsHtml = renderReasonsList(body?.reasons);
+        showBanner(
+          'warn',
+          'Not suitable for this mooring',
+          `<div>This vessel does not fit the selected mooring.</div>${reasonsHtml}`
+        );
+
+        if (Array.isArray(body?.alternatives) && body.alternatives.length > 0) {
+          renderAlternativesAsResults(body.alternatives, 'Suitability failed — suggested alternatives (click Select).');
+          return;
+        }
+
+        try {
+          document.getElementById('availMarinaId').value = String(document.getElementById('marinaId').value);
+          document.getElementById('availVesselId').value = String(document.getElementById('vesselId').value);
+          document.getElementById('availStartDate').value = document.getElementById('startDate').value;
+          document.getElementById('availEndDate').value = document.getElementById('endDate').value;
+          document.getElementById('availBlockStatuses').value = 'approved';
+          await searchAvailability();
+        } catch (_) {}
+
+        return;
+      }
+
+      if (body) {
+        bannerBodyEl.innerHTML += `<pre style="margin-top:10px;">${esc(JSON.stringify(body, null, 2))}</pre>`;
+      }
+    }
+  }
+
+  async function approveBooking() {
+    clearBanner();
+
+    const base = apiBase();
+    const token = document.getElementById('token').value.trim();
+    const id = Number(document.getElementById('approveBookingId').value);
+
+    if (!base) return show('API Base URL is blank.');
+    if (!token) return show('Operator token is required.');
+    if (!Number.isFinite(id) || id <= 0) return show('Valid booking ID is required.');
+
+    const url = `${base}/api/bookings/${id}/approve`;
+    show({ message: 'Approving booking…', url });
+
+    try {
+      const data = await fetchJson(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+      });
+
+      showBanner(
+        'success',
+        'Booking approved',
+        `<div>Booking <strong>${esc(id)}</strong> has been approved.</div>`
+      );
+
+      show(data);
+      return;
+    } catch (err) {
+      const status = err?.status;
+      const body = err?.body;
+
+      show({ error: 'Approve booking failed', status, body });
+
+      showBanner(
+        'error',
+        'Cannot approve booking',
+        `<div>The booking could not be approved.</div>`
+      );
+
+      if (status === 409) {
+        showBanner(
+          'warn',
+          'Cannot approve: dates not available',
+          `<div>This mooring is already allocated for the selected dates.</div>`
+        );
+
+        if (body?.conflictsWith?.length) {
+          const conflictsHtml = body.conflictsWith
+            .map(c => `<li>ID ${esc(c.id)} — ${esc(c.startDate)} to ${esc(c.endDate)} (${esc(c.status)})</li>`)
+            .join('');
+          bannerBodyEl.innerHTML +=
+            `<div style="margin-top:8px;"><div style="font-weight:bold;">Conflicts with</div><ul style="margin:6px 0 0 18px;">${conflictsHtml}</ul></div>`;
+        }
+
+        if (Array.isArray(body?.alternatives) && body.alternatives.length > 0) {
+          renderAlternativesAsResults(body.alternatives, 'Suggested alternatives (click Select).');
+        }
+
+        return;
+      }
+
+      if (body) {
+        bannerBodyEl.innerHTML += `<pre style="margin-top:10px;">${esc(JSON.stringify(body, null, 2))}</pre>`;
+      }
+    }
+  }
+
+  async function declineBooking() {
+    clearBanner();
+
+    const base = apiBase();
+    const token = document.getElementById('token').value.trim();
+    const id = Number(document.getElementById('approveBookingId').value);
+
+    if (!base) return show('API Base URL is blank.');
+    if (!token) return show('Operator token is required.');
+    if (!Number.isFinite(id) || id <= 0) return show('Valid booking ID is required.');
+
+    const reason = prompt('Decline reason (optional):', 'No suitable availability') || '';
+
+    const url = `${base}/api/bookings/${id}/decline`;
+    show({ message: 'Declining booking…', url, reason });
+
+    try {
+      const data = await fetchJson(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason })
+      });
+
+      showBanner(
+        'success',
+        'Booking declined',
+        `<div>Booking <strong>${esc(id)}</strong> has been declined.</div>`
+      );
+
+      show(data);
+      return;
+    } catch (err) {
+      const status = err?.status;
+      const body = err?.body;
+
+      show({ error: 'Decline booking failed', status, body });
+
+      if (status === 401) {
+        showBanner(
+          'error',
+          'Unauthorized',
+          `<div>Your operator token is missing or invalid. Re-login to generate a fresh token and paste it into the form.</div>`
+        );
+        return;
+      }
+
+      if (status === 403) {
+        showBanner(
+          'error',
+          'Forbidden',
+          `<div>You do not have permission to decline this booking (wrong marina scope or private booking).</div>`
+        );
+        if (body) {
+          bannerBodyEl.innerHTML += `<pre style="margin-top:10px;">${esc(JSON.stringify(body, null, 2))}</pre>`;
+        }
+        return;
+      }
+
+      if (status === 404) {
+        showBanner(
+          'error',
+          'Booking not found',
+          `<div>Booking ID <strong>${esc(id)}</strong> could not be found. Check the ID and try again.</div>`
+        );
+        return;
+      }
+
+      showBanner(
+        'error',
+        'Cannot decline booking',
+        `<div>The booking could not be declined.</div>`
+      );
+
+      if (body) {
+        bannerBodyEl.innerHTML += `<pre style="margin-top:10px;">${esc(JSON.stringify(body, null, 2))}</pre>`;
+      }
+    }
+  }
+
+  async function loadVesselsForAvailability() {
+  const base = apiBase();
+  const select = document.getElementById('availVesselId');
+
+  if (!base) return;
+
+  try {
+    const data = await fetchJson(`${base}/api/vessels`);
+    const list = data.vessels || [];
+
+    select.innerHTML = '';
+    if (list.length === 0) {
+      select.innerHTML = '<option value="">No vessels found</option>';
+      updateAvailabilitySearchState();
+      return;
+    }
+
+    for (const v of list) {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = `${v.name} (ID ${v.id}, ${v.lengthMetres ?? '?'}m, draft ${v.draftMetres ?? '?'}m)`;
+      select.appendChild(opt);
+    }
+
+    const current = Number(document.getElementById('vesselId').value);
+    if (Number.isFinite(current) && current > 0) {
+      select.value = String(current);
+    } else if (list.some(v => Number(v.id) === 1)) {
+      select.value = '1';
+    } else if (list.length > 0) {
+      // fall back to first vessel if no match
+      select.value = String(list[0].id);
+    }
+  } catch (err) {
+    select.innerHTML = '<option value="">(Unable to load vessels)</option>';
+  }
+
+  // Critical: after async load, re-evaluate button enabled/disabled
+  updateAvailabilitySearchState();
+}
+
+  function renderAvailabilityResults(payload) {
+    const resultsEl = document.getElementById('availResults');
+    const summaryEl = document.getElementById('availSummary');
+
+    resultsEl.innerHTML = '';
+
+    const count = payload?.count ?? 0;
+    const items = Array.isArray(payload?.results) ? payload.results : [];
+
+    const marinaName = payload?.marina?.name ? ` in ${payload.marina.name}` : '';
+    summaryEl.textContent = `Found ${count} option(s)${marinaName}.`;
+
+    if (items.length === 0) {
+      const diag = payload?.diagnostics;
+
+      resultsEl.innerHTML = `
+        <div style="border:1px solid #ddd; border-radius:6px; padding:10px; margin-top:10px;">
+          <div style="font-weight:bold;">No suitable availability found</div>
+          <div class="hint" style="margin-top:6px;">
+            Try changing dates, switching vessel, or using <em>pending + approved (strict)</em> depending on your scenario.
+          </div>
+          ${
+            diag
+              ? `
+                <details>
+                  <summary>Show diagnostics</summary>
+                  <pre style="margin-top:8px;">${esc(JSON.stringify(diag, null, 2))}</pre>
+                </details>
+              `
+              : ''
+          }
+        </div>
+      `;
+      return;
+    }
+
+    const recommended = items.slice(0, 3);
+    const alternatives = items.slice(3);
+
+    function renderCard(r, tagHtml) {
+      const meta = [
+        r.type ? `type ${r.type}` : null,
+        r.maxLengthMetres != null ? `max length ${r.maxLengthMetres}m` : null,
+        r.maxDraftMetres != null ? `max draft ${r.maxDraftMetres}m` : null,
+      ].filter(Boolean);
+
+      const score = r.score != null ? Number(r.score) : null;
+      const scoreBadge = score != null
+        ? `<span class="badge ${tagHtml ? 'badge-strong' : ''}">score ${esc(score)}</span>`
+        : '';
+
+      const reasonLine = r.reason ? `<div class="small" style="margin-top:6px;">${esc(r.reason)}</div>` : '';
+
+      const metaLine = meta.length
+        ? `<div class="kv">${meta.map(x => `<span>${esc(x)}</span>`).join('')}</div>`
+        : '';
+
+      const name = r.name || `Mooring ${r.mooringId}`;
+
+      const wrap = document.createElement('div');
+      wrap.style.border = '1px solid #ddd';
+      wrap.style.borderRadius = '6px';
+      wrap.style.padding = '10px';
+      wrap.style.marginTop = '10px';
+
+      wrap.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <div><strong>${esc(name)}</strong> <span class="small">(ID ${esc(r.mooringId)})</span></div>
+              ${tagHtml || ''}
+              ${scoreBadge}
+            </div>
+            ${metaLine}
+            ${reasonLine}
+            ${
+              (r.details || r.suitability || r.debug)
+                ? `
+                  <details>
+                    <summary>Show details</summary>
+                    <pre style="margin-top:8px;">${esc(JSON.stringify(r.details || r.suitability || r.debug, null, 2))}</pre>
+                  </details>
+                `
+                : ''
+            }
+          </div>
+          <div style="min-width:120px;">
+            <button type="button" style="width:100%;" data-mooring-id="${esc(r.mooringId)}">Select</button>
+          </div>
+        </div>
+      `;
+
+      wrap.querySelector('button').addEventListener('click', async () => {
+        const marinaId = document.getElementById('availMarinaId').value;
+        const vesselId = document.getElementById('availVesselId').value;
+        const startDate = document.getElementById('availStartDate').value;
+        const endDate = document.getElementById('availEndDate').value;
+
+        document.getElementById('marinaId').value = marinaId;
+        document.getElementById('vesselId').value = vesselId;
+        document.getElementById('startDate').value = startDate;
+        document.getElementById('endDate').value = endDate;
+
+        // Optional: make selection reload quiet:
+        await loadMoorings({ silent: true });
+        document.getElementById('mooringId').value = String(r.mooringId);
+
+        clearBanner();
+        showBanner(
+          'success',
+          'Selection applied',
+          `
+            <div><strong>${esc(name)}</strong> selected (ID ${esc(r.mooringId)}).</div>
+            <div class="hint" style="margin-top:6px;">
+              Marina ${esc(marinaId)} • Vessel ${esc(vesselId)} • ${esc(startDate)} → ${esc(endDate)}
+            </div>
+          `
+        );
+
+        show({
+          message: 'Availability selection applied to booking form',
+          selected: r,
+          bookingForm: {
+            marinaId,
+            vesselId,
+            mooringId: String(r.mooringId),
+            startDate,
+            endDate,
+          },
+        });
+      });
+
+      return wrap;
+    }
+
+    const recTitle = document.createElement('div');
+    recTitle.className = 'section-title';
+    recTitle.textContent = 'Recommended';
+    resultsEl.appendChild(recTitle);
+
+    for (const r of recommended) {
+      resultsEl.appendChild(renderCard(r, `<span class="badge badge-strong">top pick</span>`));
+    }
+
+    if (alternatives.length) {
+      const altTitle = document.createElement('div');
+      altTitle.className = 'section-title';
+      altTitle.textContent = 'Alternatives';
+      resultsEl.appendChild(altTitle);
+
+      for (const r of alternatives) {
+        resultsEl.appendChild(renderCard(r, ''));
+      }
+    }
+  }
+
+  function clearAvailabilityResults({ clearPre = false, clearBannerToo = false } = {}) {
+  const resultsEl = document.getElementById('availResults');
+  const summaryEl = document.getElementById('availSummary');
+
+  if (resultsEl) resultsEl.innerHTML = '';
+  if (summaryEl) summaryEl.textContent = '';
+
+  if (clearPre) show('Ready.');
+  if (clearBannerToo) clearBanner();
+}
+
+  async function searchAvailability() {
+    const base = apiBase();
+
+    const marinaId = Number(document.getElementById('availMarinaId').value);
+    const vesselId = Number(document.getElementById('availVesselId').value);
+    const startDate = document.getElementById('availStartDate').value;
+    const endDate = document.getElementById('availEndDate').value;
+    const blockStatuses = document.getElementById('availBlockStatuses').value;
+
+    if (!base) return show('API Base URL is blank. Set it to http://localhost:3000');
+    if (!Number.isFinite(marinaId) || marinaId <= 0) return show('Enter a valid Marina ID (e.g., 2).');
+    if (!Number.isFinite(vesselId) || vesselId <= 0) return show('Select a valid Vessel.');
+    if (!startDate || !endDate) return show('Start Date and End Date are required.');
+
+    const url = `${base}/api/availability?marinaId=${marinaId}&vesselId=${vesselId}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&blockStatuses=${encodeURIComponent(blockStatuses)}`;
+
+    show({ message: 'Searching availability…', url });
+
+    const data = await fetchJson(url);
+    renderAvailabilityResults(data);
+  }
+
+  document.getElementById('loadMooringsBtn').addEventListener('click', () => {
+  loadMoorings({ silent: false, force: true }).catch(err => show({ error: 'Load moorings failed', err }));
+});
+
+document.getElementById('marinaId')?.addEventListener('change', () => {
+  mooringsCache = { marinaId: null, data: null };
+}); 
+
+  document.getElementById('createBtn').addEventListener('click', () => {
+    createBooking().catch(err => show({ error: 'Create booking failed', err }));
+  });
+
+  document.getElementById('approveBtn').addEventListener('click', () => {
+    approveBooking().catch(err => show({ error: 'Approve booking failed', err }));
+  });
+
+  document.getElementById('declineBtn').addEventListener('click', () => {
+    declineBooking().catch(err => show({ error: 'Decline booking failed', err }));
+  });
+
+  document.getElementById('availSearchBtn').addEventListener('click', () => {
+    searchAvailability().catch(err => show({ error: 'Search availability failed', err }));
+  });
+
+  // Step 1: Auto-clear availability results when search inputs change
+    // Step 1a: Enable/disable Search Availability based on form validity
+    function updateAvailabilitySearchState() {
+    const marinaId = Number(document.getElementById('availMarinaId').value);
+    const vesselId = Number(document.getElementById('availVesselId').value);
+    const startDate = document.getElementById('availStartDate').value;
+    const endDate = document.getElementById('availEndDate').value;
+
+    let valid = true;
+
+    if (!Number.isFinite(marinaId) || marinaId <= 0) valid = false;
+    if (!Number.isFinite(vesselId) || vesselId <= 0) valid = false;
+    if (!startDate || !endDate) valid = false;
+    if (startDate && endDate && endDate < startDate) valid = false;
+    if (!valid) {
+  show({ message: "Search Availability disabled (waiting for valid inputs)", marinaId, vesselId, startDate, endDate });
+}
+
+    const btn = document.getElementById('availSearchBtn');
+    btn.disabled = !valid;
+    btn.style.opacity = valid ? '1' : '0.5';
+    btn.style.cursor = valid ? 'pointer' : 'not-allowed';
+  }
+
+  function wireAvailabilityAutoClear() {
+    const ids = [
+      'availMarinaId',
+      'availVesselId',
+      'availStartDate',
+      'availEndDate',
+      'availBlockStatuses'
+    ];
+
+    const handler = () => {
+  // Clear the rendered availability cards/summary.
+  // Do NOT clear the <pre> by default, so debug output remains.
+  clearAvailabilityResults({ clearPre: false, clearBannerToo: false });
+
+  // Re-evaluate whether Search Availability should be enabled
+  updateAvailabilitySearchState();
+};
+
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+
+      // Use both input + change for best coverage across input types
+      el.addEventListener('input', handler);
+      el.addEventListener('change', handler);
+    }
+  }
+
+  wireAvailabilityAutoClear();
+
+  document.getElementById('availClearBtn').addEventListener('click', () => {
+  clearAvailabilityResults({ clearPre: false, clearBannerToo: false });
+});
+
+  document.getElementById('reloadVesselsBtn').addEventListener('click', () => {
+    loadVesselsForAvailability().catch(err => show({ error: 'Reload vessels failed', err }));
+  });
+
+  // Defaults for availability dates: +7 days start, +2 days duration
+  const t = new Date();
+  const s = new Date(t); s.setDate(s.getDate() + 7);
+  const e = new Date(s); e.setDate(e.getDate() + 2);
+  document.getElementById('availStartDate').value = ymd(s);
+  document.getElementById('availEndDate').value = ymd(e);
+
+// Sync marina default from main marinaId
+document.getElementById('availMarinaId').value =
+  document.getElementById('marinaId').value;
+
+// Load vessels for availability dropdown
+loadVesselsForAvailability().catch(() => {});
+
+// Patch 2: auto-load moorings quietly (no <pre> noise)
+loadMoorings({ silent: true }).catch(() => {});
+
+// Ensure Search Availability button state is correct on load
+updateAvailabilitySearchState();
+</script>
+
+
+</body>
+</html>

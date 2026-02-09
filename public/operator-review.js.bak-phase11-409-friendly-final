@@ -1,0 +1,764 @@
+/* BoatiesMate – Operator Review (Phase 3–5)
+   - Loads GET /api/bookings/:id/application-pack
+   - Renders operator-friendly cards
+   - Uses localStorage token (same as Inbox)
+   - Phase 5: shows Decision Intelligence and gates Approve
+*/
+
+(function () {
+    // ---------- Safe helpers ----------
+    function qs(id) { return document.getElementById(id); }
+    var decisionInFlight = false;
+
+    // Safari-safe HTML escape (no replaceAll)
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  
+    function normalizeDocType(t) {
+        if (!t) return "document";
+        const s = String(t).toLowerCase();
+        if (s.includes("insur")) return "insurance";
+        if (s.includes("ewof") || s.includes("wof")) return "ewof";
+        if (s.includes("reg")) return "registration";
+        return s;
+      }
+      
+      var DEMO_DOC_META = {
+        insurance: { status: "valid", expiresAt: "2026-08-01", fileName: "insurance.pdf" },
+        ewof:      { status: "valid", expiresAt: "2026-04-15", fileName: "ewof.pdf" },
+        registration: { status: "valid", expiresAt: "2026-12-31", fileName: "registration.pdf" }
+      };      
+
+      function pickDocUrl(doc, bookingId, vesselId) {
+        // If backend provides a real URL, use it
+        const real =
+          doc.url || doc.fileUrl || doc.href || doc.downloadUrl || doc.viewUrl;
+      
+        if (real) return real;
+      
+        // Otherwise fall back to demo viewer so it’s always clickable
+        const type = encodeURIComponent(normalizeDocType(doc.type || doc.docType || doc.name));
+        const fileName = encodeURIComponent(doc.fileName || doc.filename || doc.file || `${type}.pdf`);
+        const status = encodeURIComponent(doc.status || doc.state || "unknown");
+        const expiresAt = encodeURIComponent(doc.expiresAt || doc.expiry || doc.expires || "—");
+      
+        return `doc-viewer.html?doc=${encodeURIComponent(normalizeDocType(doc.type || doc.docType || doc.name))}&status=${encodeURIComponent(doc.status || doc.state || "unknown")}&expiresAt=${encodeURIComponent(doc.expiresAt || doc.expiry || doc.expires || "—")}&bookingId=${encodeURIComponent(bookingId || "")}&vesselId=${encodeURIComponent(vesselId || "")}`;
+
+      }
+      
+      function extractDocumentsFromPack(pack) {
+        // Tries a few common shapes without needing you to restructure backend:
+        // pack.documents
+        // pack.vessel.documents
+        // pack.compliance.documents
+        // pack.complianceDocs
+        // pack.application.documents
+        const candidates = [
+          pack && pack.documents,
+          pack && pack.vessel && pack.vessel.documents,
+          pack && pack.compliance && pack.compliance.documents,
+          pack && pack.complianceDocs,
+          pack && pack.application && pack.application.documents
+        ];
+      
+        for (const c of candidates) {
+          if (Array.isArray(c) && c.length) return c;
+        }
+        return [];
+      }
+      
+      function renderComplianceDocuments(pack) {
+        const emptyEl = document.getElementById("docsEmpty");
+        const tableEl = document.getElementById("docsTable");
+        const tbody = document.getElementById("docsTbody");
+      
+        if (!emptyEl || !tableEl || !tbody) return; // HTML block not present
+      
+        const docs = extractDocumentsFromPack(pack);
+        const bookingId = (pack && pack.booking && pack.booking.id) || (pack && pack.bookingId) || "";
+        const vesselId = (pack && pack.vessel && pack.vessel.id) || (pack && pack.vesselId) || "";
+      
+        tbody.innerHTML = "";
+
+        // Phase 8.3A — Expected docs rows (UI-only trust signal)
+        const EXPECTED = [
+          { key: "insurance", label: "Insurance" },
+          { key: "ewof", label: "EWOF" },
+          { key: "registration", label: "Registration" },
+          { key: "shore_power_lead_test", label: "Shore Power Lead Test" },
+        ];
+
+        function prettyStatus(v) {
+            const s = String(v || "").trim();
+            if (!s || s === "unknown") return "Unknown";
+            if (s === "not_provided") return "Not provided (demo)";
+            return s.replace(/_/g, " ");
+          }          
+
+          function addSectionRow(title) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td colspan="4"
+                  style="padding:10px 8px;
+                         border-bottom:1px solid #e9e9e9;
+                         font-weight:bold;
+                         background:#fafafa;">
+                ${title}
+              </td>
+            `;
+            tbody.appendChild(tr);
+          }          
+
+        // Build lookup of docs by normalized key
+        const byKey = new Map();
+        (docs || []).forEach((d) => {
+          const k = normalizeDocType(d.type || d.docType || d.name);
+          if (k) byKey.set(k, d);
+        });
+
+        // Build display list: expected first, then extras
+        const expectedKeys = new Set(EXPECTED.map((x) => x.key));
+        const displayDocs = [];
+
+        EXPECTED.forEach((exp) => {
+          const actual = byKey.get(exp.key);
+          if (actual) {
+            displayDocs.push({ label: exp.label, doc: actual });
+          } else {
+            // Placeholder doc so View still works (doc-viewer shows fallback if unmapped)
+            displayDocs.push({
+              label: exp.label,
+              doc: { type: exp.key, status: "not_provided", expiresAt: "—" },
+            });
+          }
+        });
+
+        // Add any additional docs from backend that aren't in our expected list
+        (docs || []).forEach((d) => {
+          const k = normalizeDocType(d.type || d.docType || d.name);
+          if (k && !expectedKeys.has(k)) {
+            displayDocs.push({ label: k.replace(/_/g, " "), doc: d });
+          }
+        });
+
+        // If literally nothing, keep prior empty behavior
+        if (!displayDocs.length) {
+          tableEl.style.display = "none";
+          emptyEl.style.display = "block";
+          emptyEl.textContent = "No documents loaded.";
+          return;
+        }
+
+        emptyEl.style.display = "none";
+        tableEl.style.display = "table";
+
+        // Split into expected vs extras based on our EXPECTED keys
+const expectedList = displayDocs.slice(0, EXPECTED.length);
+const extraList = displayDocs.slice(EXPECTED.length);
+
+// ---- Expected documents ----
+addSectionRow("Expected documents");
+
+expectedList.forEach(({ label, doc }) => {
+  const tr = document.createElement("tr");
+
+  const typeKey = normalizeDocType(doc.type || doc.docType || doc.name);
+  const demoMeta = DEMO_DOC_META[typeKey] || {};
+
+  const statusRaw = doc.status || doc.state || demoMeta.status || "unknown";
+  const expires =
+    doc.expiresAt || doc.expiry || doc.expires || demoMeta.expiresAt || "—";
+
+  if (!doc.fileName && !doc.filename && !doc.file && demoMeta.fileName) {
+    doc.fileName = demoMeta.fileName;
+  }
+
+  const url = pickDocUrl(doc, bookingId, vesselId);
+
+  tr.innerHTML = `
+    <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${label}</td>
+    <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${prettyStatus(statusRaw)}</td>
+    <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${expires}</td>
+    <td style="padding:8px; border-bottom:1px solid #f2f2f2; text-align:right;">
+      <a href="${url}" target="_blank" rel="noopener noreferrer">View</a>
+    </td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// ---- Additional documents (only if present) ----
+if (extraList.length) {
+  addSectionRow("Additional documents");
+
+  extraList.forEach(({ label, doc }) => {
+    const tr = document.createElement("tr");
+
+    const typeKey = normalizeDocType(doc.type || doc.docType || doc.name);
+    const demoMeta = DEMO_DOC_META[typeKey] || {};
+
+    const statusRaw = doc.status || doc.state || demoMeta.status || "unknown";
+    const expires =
+      doc.expiresAt || doc.expiry || doc.expires || demoMeta.expiresAt || "—";
+
+    if (!doc.fileName && !doc.filename && !doc.file && demoMeta.fileName) {
+      doc.fileName = demoMeta.fileName;
+    }
+
+    const url = pickDocUrl(doc, bookingId, vesselId);
+
+    tr.innerHTML = `
+      <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${label}</td>
+      <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${prettyStatus(statusRaw)}</td>
+      <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${expires}</td>
+      <td style="padding:8px; border-bottom:1px solid #f2f2f2; text-align:right;">
+        <a href="${url}" target="_blank" rel="noopener noreferrer">View</a>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+      }      
+
+    // ---------- Banner ----------
+    function clearBanner() {
+      var bannerEl = qs("banner");
+      var bannerTitleEl = qs("bannerTitle");
+      var bannerBodyEl = qs("bannerBody");
+      if (!bannerEl || !bannerTitleEl || !bannerBodyEl) return;
+  
+      bannerEl.style.display = "none";
+      bannerEl.style.borderLeftColor = "#888";
+      bannerTitleEl.textContent = "";
+      bannerBodyEl.innerHTML = "";
+    }
+  
+    function showBanner(kind, title, htmlBody) {
+      var bannerEl = qs("banner");
+      var bannerTitleEl = qs("bannerTitle");
+      var bannerBodyEl = qs("bannerBody");
+      if (!bannerEl || !bannerTitleEl || !bannerBodyEl) return;
+  
+      var colors = {
+        success: "#2e7d32",
+        warn: "#b26a00",
+        error: "#b00020",
+        info: "#2b5cab",
+      };
+  
+      bannerEl.style.display = "block";
+      bannerEl.style.borderLeftColor = colors[kind] || "#888";
+      bannerTitleEl.textContent = title || "";
+      bannerBodyEl.innerHTML = htmlBody || "";
+    }
+  
+    // ---------- Phase 5: Decision Intel (Inbox-aligned) ----------
+    function decisionIntelLabel(intel) {
+      if (!intel) return "UNKNOWN";
+  
+      // Preferred v2 shape: { approvable: boolean, classification: "TEMPORARY"|"STRUCTURAL"|"COMPLIANCE", ... }
+      if (intel.approvable === true) return "APPROVABLE";
+  
+      var c = String(intel.classification || "").toUpperCase();
+      if (c === "TEMPORARY") return "TEMP_UNAVAILABLE";
+      if (c === "STRUCTURAL") return "UNSUITABLE";
+      if (c === "COMPLIANCE") return "NEEDS_COMPLIANCE";
+  
+      // Legacy shape fallback: { status: "APPROVABLE"|"TEMP_UNAVAILABLE"|... }
+      var legacy = String(intel.status || "").toUpperCase();
+      if (legacy) return legacy;
+  
+      return "UNKNOWN";
+    }
+  
+    function decisionIntelPillClass(intel) {
+      if (!intel) return "pill-neutral";
+      if (intel.approvable === true) return "pill-ok";
+  
+      var c = String(intel.classification || "").toUpperCase();
+      if (c === "TEMPORARY") return "pill-warn";
+      if (c === "STRUCTURAL") return "pill-bad";
+      if (c === "COMPLIANCE") return "pill-warn";
+  
+      // Legacy: map common statuses
+      var s = String(intel.status || "").toUpperCase();
+      if (s === "APPROVABLE") return "pill-ok";
+      if (s.indexOf("TEMP") >= 0) return "pill-warn";
+      if (s.indexOf("UNSUIT") >= 0) return "pill-bad";
+      if (s.indexOf("COMPLI") >= 0) return "pill-warn";
+  
+      return "pill-neutral";
+    }
+  
+    function buildDecisionReasonLines(intel) {
+      var lines = [];
+  
+      if (!intel) return lines;
+  
+      // Preferred v2: blockingReasons / warnings
+      if (Array.isArray(intel.blockingReasons) && intel.blockingReasons.length) {
+        intel.blockingReasons.forEach(function (br) {
+          if (!br) return;
+          var msg = br.message ? String(br.message) : "Blocked";
+          var meta = br.meta || null;
+  
+          // Optional: append overlap IDs for clarity (matches Inbox behaviour)
+          if (meta && Array.isArray(meta.overlapBookingIds) && meta.overlapBookingIds.length) {
+            msg += " Overlap booking(s): " + meta.overlapBookingIds.join(", ");
+          }
+          lines.push(msg);
+        });
+        return lines;
+      }
+  
+      if (Array.isArray(intel.warnings) && intel.warnings.length) {
+        intel.warnings.forEach(function (w) {
+          if (!w) return;
+          var msg2 = w.message ? String(w.message) : "Warning";
+          lines.push(msg2);
+        });
+        return lines;
+      }
+  
+      // Legacy fallback: reasons: string[]
+      if (Array.isArray(intel.reasons) && intel.reasons.length) {
+        intel.reasons.forEach(function (r) {
+          if (r == null) return;
+          lines.push(String(r));
+        });
+        return lines;
+      }
+  
+      return lines;
+    }
+  
+    function renderDecisionIntel(decisionIntel) {
+      var el = qs("decisionIntelBox");
+      if (!el) return;
+  
+      var label = decisionIntelLabel(decisionIntel);
+      var pillClass = decisionIntelPillClass(decisionIntel);
+      var lines = buildDecisionReasonLines(decisionIntel);
+  
+      var reasonsHtml = lines.length
+        ? "<ul style='margin:6px 0 0 16px;'>" + lines.map(function (t) {
+            return "<li>" + esc(t) + "</li>";
+          }).join("") + "</ul>"
+        : "<div class='muted' style='margin-top:6px;'>No blockers.</div>";
+  
+      el.innerHTML =
+        "<div><span class='pill " + esc(pillClass) + "'>" + esc(label) + "</span></div>" +
+        reasonsHtml;
+    }
+  
+    function isApprovableDecision(decisionIntel) {
+      if (!decisionIntel) return false;
+  
+      // Preferred v2
+      if (decisionIntel.approvable === true) return true;
+  
+      // Legacy fallback
+      return String((decisionIntel.status || "")).toUpperCase() === "APPROVABLE";
+    }
+  
+    // ---------- API base + token ----------
+    function apiBase() {
+      var el = qs("apiBase");
+      var v = (el && el.value ? el.value.trim() : "");
+      var fromStorage = (localStorage.getItem("apiBaseUrl") || "").trim();
+      return (v || fromStorage || "http://localhost:3000").replace(/\/+$/, "");
+    }
+  
+    function getToken() {
+      var raw =
+        localStorage.getItem("token") ||
+        localStorage.getItem("operatorToken") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        "";
+  
+      var s = String(raw || "").trim();
+      if (!s) return "";
+  
+      // If token was stored via JSON.stringify it may include quotes
+      try {
+        var parsed = JSON.parse(s);
+        if (typeof parsed === "string") return parsed.trim();
+      } catch (e) {
+        // ignore
+      }
+      return s;
+    }
+  
+    // Compatibility shim (if any older code path calls authToken())
+    function authToken() {
+      return getToken();
+    }
+  
+    async function fetchJson(url, opts) {
+      opts = opts || {};
+      var token = getToken();
+  
+      var headers = Object.assign({}, opts.headers || {});
+      if (token) {
+        headers["Authorization"] = "Bearer " + token;
+        headers["X-Auth-Token"] = token; // compatibility
+      }
+      if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
+  
+      var res = await fetch(url, Object.assign({}, opts, { headers: headers }));
+      var text = await res.text();
+  
+      var data = null;
+      try { data = JSON.parse(text); } catch (e) {}
+  
+      if (!res.ok) {
+        var msg = (data && (data.error || data.message)) ? (data.error || data.message) : text;
+        var err = new Error("HTTP " + res.status + " " + msg);
+        err.status = res.status;
+        err.body = data || text;
+        throw err;
+      }
+  
+      return data;
+    }
+  
+    // ---------- UI helpers ----------
+    function setEligibility(eligible, noteText) {
+      var badge = qs("eligibilityBadge");
+      var note = qs("eligibilityNote");
+      if (!badge || !note) return;
+  
+      badge.classList.remove("ok", "warn", "err");
+      if (eligible === true) {
+        badge.classList.add("ok");
+        badge.textContent = "Eligible";
+      } else if (eligible === false) {
+        badge.classList.add("err");
+        badge.textContent = "Not eligible";
+      } else {
+        badge.classList.add("warn");
+        badge.textContent = "Not loaded";
+      }
+  
+      note.textContent = noteText || "";
+    }
+  
+    function setGrid(el, rows) {
+      if (!el) return;
+      el.innerHTML = (rows || []).map(function (kv) {
+        return "<div class='k'>" + esc(kv[0]) + "</div><div>" + esc(kv[1]) + "</div>";
+      }).join("");
+    }
+  
+    function bindDecisionBookingId(id) {
+      var el = qs("decisionBookingId");
+      if (el) el.value = id ? String(id) : "";
+    }
+  
+    function setApproveEnabled(enabled) {
+      var btn = qs("approveBtn");
+      if (btn) btn.disabled = !enabled;
+    }
+  
+    function setDeclineEnabled(enabled) {
+      var btn = qs("declineBtn");
+      if (btn) btn.disabled = !enabled;
+    }
+  // ---------- Phase 6: Post-decision UX reinforcement ----------
+function clearDeclineReasonInput() {
+    var el = qs("declineReason");
+    if (el) el.value = "";
+  }
+  
+  function scrollToDecisionSummary() {
+    // Scroll to the Decision Summary card (if present/visible)
+    try {
+      var card = qs("decisionSummaryCard");
+      if (card && card.style.display !== "none") {
+        card.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    } catch (e) {}
+  
+    // Fallback: scroll to top banner if card isn't available
+    try {
+      var banner = qs("banner");
+      if (banner) banner.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (e2) {}
+  }
+  
+    function setRaw(pack) {
+      var el = qs("rawJson");
+      if (el) el.textContent = JSON.stringify(pack, null, 2);
+    }
+  
+    // ---------- Main ----------
+    async function loadPack() {
+      clearBanner();
+  
+      var bookingId = Number((qs("bookingId") && qs("bookingId").value) || 0);
+      if (!bookingId) {
+        showBanner("warn", "Load", "<div>Enter Booking ID.</div>");
+        return;
+      }
+  
+      var base = apiBase();
+  
+      try {
+        var pack = await fetchJson(base + "/api/bookings/" + bookingId + "/application-pack");
+        setRaw(pack);
+        renderPack(pack, bookingId);
+        renderComplianceDocuments(pack);
+      } catch (e) {
+        showBanner(
+          "error",
+          "Load failed",
+          "<div><strong>Could not load application pack.</strong></div>" +
+            "<div class='muted' style='margin-top:6px;'>" + esc(e.message || e) + "</div>" +
+            "<div class='muted' style='margin-top:6px;'>HTTP: " + esc(String(e.status || "")) + "</div>"
+        );
+      }
+    }
+  
+    function renderPack(pack, bookingId) {
+      var cards = qs("cardsArea");
+      if (cards) cards.style.display = "block";
+  
+      var bookingStatus = String((pack && pack.booking && pack.booking.status) || "").toLowerCase();
+      var eligible = !!(pack && pack.complianceSummary && pack.complianceSummary.eligibleToBook);
+      var isPending = bookingStatus === "pending";
+  
+      // Booking card
+      setGrid(qs("bookingCard"), [
+        ["Booking ID", bookingId],
+        ["Status", (pack.booking && pack.booking.status) || ""],
+        ["Marina ID", (pack.booking && (pack.booking.marinaId != null ? pack.booking.marinaId : ""))],
+        ["Mooring ID", (pack.booking && (pack.booking.mooringId != null ? pack.booking.mooringId : ""))],
+        ["Start Date", (pack.booking && pack.booking.startDate) || ""],
+        ["End Date", (pack.booking && pack.booking.endDate) || ""],
+      ]);
+  
+// Decision Summary (Audit trail – Phase 6)
+(function renderDecisionSummary() {
+    var card = qs("decisionSummaryCard");
+    var box = qs("decisionSummaryBox");
+    if (!card || !box || !pack || !pack.booking) return;
+  
+    var b = pack.booking;
+  
+    var decisionType = (b.decisionType != null ? String(b.decisionType) : "").toLowerCase();
+    var approvedAt = b.approvedAt || null;
+    var declinedAt = b.declinedAt || null;
+    var decisionByUserId = (b.decisionByUserId != null ? b.decisionByUserId : null);
+    var declineReason = (b.declineReason != null ? String(b.declineReason) : "");
+  
+    // Decide whether we show the card
+    var hasDecision = !!(decisionType || approvedAt || declinedAt || decisionByUserId || (declineReason && declineReason.trim()));
+    if (!hasDecision) {
+      card.style.display = "none";
+      box.innerHTML = "";
+      return;
+    }
+  
+    // Human-readable time
+    function fmt(ts) {
+      if (!ts) return "";
+      try {
+        var d = new Date(ts);
+        if (isNaN(d.getTime())) return String(ts);
+        return d.toLocaleString(); // uses operator's browser locale/timezone
+      } catch (e) {
+        return String(ts);
+      }
+    }
+  
+    var when = "";
+    if (decisionType === "approved") when = fmt(approvedAt);
+    else if (decisionType === "declined") when = fmt(declinedAt);
+    else when = fmt(approvedAt || declinedAt);
+  
+    // Pill
+    function decisionPill(dt) {
+      if (dt === "approved") return "<span class='pill pill-ok'>APPROVED</span>";
+      if (dt === "declined") return "<span class='pill pill-bad'>DECLINED</span>";
+      return "<span class='pill pill-neutral'>DECIDED</span>";
+    }
+  
+    var rows = [];
+  
+    rows.push(["Decision", decisionPill(decisionType)]);
+  
+    if (when) rows.push(["When", esc(when)]);
+  
+    if (decisionByUserId != null && decisionByUserId !== "") {
+      rows.push(["Decided by (userId)", esc(String(decisionByUserId))]);
+    }
+  
+    if (decisionType === "declined" && declineReason && declineReason.trim()) {
+      rows.push(["Decline reason", esc(declineReason.trim())]);
+    }
+  
+    box.innerHTML = rows.map(function (kv) {
+      return "<div class='k'>" + esc(kv[0]) + "</div><div>" + kv[1] + "</div>";
+    }).join("");
+  
+    card.style.display = "block";
+  })();  
+
+      // Owner card
+      setGrid(qs("ownerCard"), [
+        ["Name", (pack.owner && pack.owner.fullName) || ""],
+        ["Email", (pack.owner && pack.owner.email) || ""],
+        ["Phone", (pack.owner && pack.owner.phone) || ""],
+      ]);
+  
+      // Eligibility badge
+      setEligibility(eligible, eligible ? "Compliance: eligible to book" : "Compliance: NOT eligible to book");
+  
+      // Decision id for approve/decline
+      bindDecisionBookingId(bookingId);
+  
+      // Decision Intel display + gate approve
+      var decisionIntel = (pack && pack.decisionIntel) ? pack.decisionIntel : null;
+      renderDecisionIntel(decisionIntel);
+  
+      var canApprove = eligible && isPending && isApprovableDecision(decisionIntel);
+      var canDecline = isPending;
+  
+      setApproveEnabled(canApprove);
+      setDeclineEnabled(canDecline);
+  
+      // Guidance banner (use consistent wording)
+      var diLabel = decisionIntelLabel(decisionIntel);
+  
+      if (!isPending) {
+        showBanner(
+          "info",
+          "Booking already decided",
+          "<div>This booking is <strong>" + esc((pack.booking && pack.booking.status) || "") + "</strong>.</div>" +
+            "<div style='margin-top:6px;'>Approve and Decline are disabled.</div>"
+        );
+      } else if (!eligible) {
+        showBanner("warn", "Not eligible", "<div>This booking is <strong>pending</strong> but compliance is not met.</div>");
+      } else if (!isApprovableDecision(decisionIntel)) {
+        showBanner("warn", "Not approvable", "<div>Decision Intel is <strong>" + esc(diLabel) + "</strong> (approve requires <strong>APPROVABLE</strong>).</div>");
+      } else {
+        showBanner("success", "Ready for decision", "<div>Pending + eligible + <strong>APPROVABLE</strong>.</div>");
+      }
+    }
+  
+    async function approveBooking() {
+        clearBanner();
+        var base = apiBase();
+        var id = (qs("decisionBookingId") && qs("decisionBookingId").value) || "";
+        if (!id) return showBanner("warn", "Approve", "<div>No booking loaded.</div>");
+      
+        if (decisionInFlight) return;
+        decisionInFlight = true;
+        setApproveEnabled(false);
+        setDeclineEnabled(false);
+      
+        try {
+          await fetchJson(base + "/api/bookings/" + id + "/approve", {
+            method: "POST",
+            body: JSON.stringify({}),
+          });
+          showBanner("success", "Approved", "<div>Booking approved.</div>");
+          await loadPack();
+setTimeout(scrollToDecisionSummary, 50);
+        } catch (e) {
+          
+        
+        // PHASE11_SHOW_APPROVE_ERROR
+        try {
+          var msg = String((e && e.message) || e || "");
+          showBanner("warn", "Approve debug", "<div style='word-break:break-word;'><strong>caught:</strong> " + esc(msg) + "</div>");
+        } catch(_ignore) {}
+
+// PHASE11_FRIENDLY_409_V2
+        try {
+          var msg = String((e && e.message) || "");
+          if (msg.includes("HTTP 409")) {
+            showBanner("warn", "Cannot approve (conflict)", "<div>This mooring isn’t available for those dates (it overlaps an approved booking).<br/>Try another pending booking or adjust the dates.</div>");
+          }
+        } catch(_ignore) {}
+
+showBanner(
+            "error",
+            "Approve failed",
+            "<div><strong>" + esc((e.body && e.body.error) || e.message || "Request failed") + "</strong></div>" +
+              "<div class='muted' style='margin-top:6px;'>HTTP: " + esc(String(e.status || "")) + "</div>"
+          );
+        } finally {
+          decisionInFlight = false;
+        }
+      }      
+  
+      async function declineBooking() {
+        clearBanner();
+        var base = apiBase();
+        var id = (qs("decisionBookingId") && qs("decisionBookingId").value) || "";
+        var reason = (qs("declineReason") && qs("declineReason").value) || "";
+        if (!id) return showBanner("warn", "Decline", "<div>No booking loaded.</div>");
+      
+        if (decisionInFlight) return;
+        decisionInFlight = true;
+        setApproveEnabled(false);
+        setDeclineEnabled(false);
+      
+        try {
+          await fetchJson(base + "/api/bookings/" + id + "/decline", {
+            method: "POST",
+            body: JSON.stringify({ reason: reason }),
+          });
+          showBanner("success", "Declined", "<div>Booking declined.</div>");
+          clearDeclineReasonInput();
+          await loadPack();
+          setTimeout(scrollToDecisionSummary, 50);          
+        } catch (e) {
+          showBanner(
+            "error",
+            "Decline failed",
+            "<div><strong>" + esc((e.body && e.body.error) || e.message || "Request failed") + "</strong></div>" +
+              "<div class='muted' style='margin-top:6px;'>HTTP: " + esc(String(e.status || "")) + "</div>"
+          );
+        } finally {
+          decisionInFlight = false;
+        }
+      }      
+  
+    // ---------- Init: wait for DOM ----------
+    document.addEventListener("DOMContentLoaded", function () {
+      // Prove JS is running
+      var di = qs("decisionIntelBox");
+      if (di) di.textContent = "JS loaded. Enter Booking ID and click Load.";
+  
+      // Wire buttons
+      var loadBtn = qs("loadBtn");
+      if (loadBtn) loadBtn.onclick = loadPack;
+  
+      var approveBtn = qs("approveBtn");
+      if (approveBtn) approveBtn.onclick = approveBooking;
+  
+      var declineBtn = qs("declineBtn");
+      if (declineBtn) declineBtn.onclick = declineBooking;
+  
+      // Auto-load when opened from Inbox link (?bookingId=123)
+      try {
+        var params = new URLSearchParams(window.location.search || "");
+        var id = params.get("bookingId");
+        if (id && qs("bookingId")) {
+          qs("bookingId").value = String(id);
+          loadPack();
+        }
+      } catch (e) {}
+    });
+  })();
+  

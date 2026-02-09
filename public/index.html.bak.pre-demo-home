@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BoatiesMate — Demo Home</title>
+  <style>
+    :root { --border:#e6e6e6; --muted:#666; --bg:#fafafa; }
+    body { font-family: Arial, sans-serif; margin:0; background:var(--bg); color:#111; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 18px; }
+    .card {
+      background:#fff; border:1px solid var(--border); border-radius:12px;
+      padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    h1 { margin: 0 0 6px; font-size: 22px; }
+    p { margin: 8px 0; color: var(--muted); line-height: 1.4; }
+    .grid { display:grid; gap:12px; margin-top:14px; }
+    @media (min-width: 700px) { .grid { grid-template-columns: 1fr 1fr; } }
+    .btn {
+      display:block; width:100%;
+      padding:16px 14px; border-radius:12px; border:1px solid var(--border);
+      background:#fff; text-decoration:none; color:#111;
+      font-size:16px; font-weight:700; text-align:left;
+    }
+    .btn:hover { border-color:#cfcfcf; }
+    .btn small { display:block; font-weight:400; color:var(--muted); margin-top:6px; }
+    .footer { margin-top:12px; font-size:12px; color:var(--muted); }
+    .links a { color:#2b5cab; text-decoration:none; }
+    .links a:hover { text-decoration:underline; }
+    .pill {
+      display:inline-block; padding: 3px 8px; border-radius:999px;
+      font-size:12px; border:1px solid var(--border); background:#fff; color:#444;
+    }
+  </style>
+  <link rel="stylesheet" href="styles.css" />
+
+</head>
+<body>
+  <div class="demo-badge">BoatiesMate Prototype — Demo Mode<small>Phase 11</small></div>
+  <header class="brand-header">
+    <div class="brand-header__inner">
+      <img
+        class="brand-logo"
+        src="/boatiesmate-secondary-long-ocean.png"
+        alt="BoatiesMate"
+      />
+      <span class="role-pill role-pill--boatie">Boatie</span>
+    </div>
+  </header>
+  
+  <div class="wrap">
+    <div class="card">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <h1>BoatiesMate — Demo Home</h1>
+        <span class="pill">localhost:3000</span>
+      </div>
+
+      <p>
+        Start the demo by choosing who you are acting as. This keeps the walkthrough clear for
+        marina operators, investors, and partners.
+      </p>
+
+      <div class="grid">
+        <a class="btn" href="boatie-demo.html">
+          I’m a Boatie
+          <small>Minimal effort booking (dates + marina). Owner/vessel/docs are assumed preloaded.</small>
+        </a>
+
+        <a class="btn" href="operator-inbox.html">
+          I’m an Operator
+          <small>Review pending bookings in the inbox, open Application Packs, approve/decline.</small>
+        </a>
+      </div>
+
+      <div class="footer links">
+        Useful pages:
+        <a class="btn-secondary" href="booking-form.html">Booking Form</a> ·
+        <a class="btn-secondary" href="profile.html">Profile</a> ·
+        <a class="btn-secondary" href="terms.html">Terms</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

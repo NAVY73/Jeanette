@@ -1,0 +1,85 @@
+(function () {
+  const KEY_OPERATOR_MARINA = "bm_operatorMarinaId";
+  const KEY_OPERATOR_EMAIL  = "bm_operatorEmail";
+
+  const els = {
+    btnBoatie: document.getElementById("btnBoatie"),
+    btnInbox: document.getElementById("btnInbox"),
+
+    operatorSelect: document.getElementById("operatorSelect"),
+    btnSetOperator: document.getElementById("btnSetOperator"),
+    btnOpenInboxWithOperator: document.getElementById("btnOpenInboxWithOperator"),
+    operatorStatus: document.getElementById("operatorStatus"),
+
+    bookingId: document.getElementById("bookingId"),
+    btnOpenReview: document.getElementById("btnOpenReview"),
+
+    resetConfirm: document.getElementById("resetConfirm"),
+    btnReset: document.getElementById("btnReset"),
+    resetStatus: document.getElementById("resetStatus"),
+  };
+
+  function nav(url) { window.location.href = url; }
+
+  function setOperator(marinaId) {
+    localStorage.setItem(KEY_OPERATOR_MARINA, String(marinaId));
+
+    const email = (String(marinaId) === "3")
+      ? "operator@westhaven.example"
+      : "operator@gulfharbour.example";
+
+    localStorage.setItem(KEY_OPERATOR_EMAIL, email);
+
+    els.operatorStatus.textContent =
+      `Operator set: marinaId ${marinaId} • ${email}`;
+  }
+
+  els.btnBoatie.addEventListener("click", () => nav("/boatie-demo.html"));
+  els.btnInbox.addEventListener("click", () => nav("/operator-inbox.html"));
+
+  els.btnSetOperator.addEventListener("click", () => {
+    setOperator(els.operatorSelect.value);
+  });
+
+  els.btnOpenInboxWithOperator.addEventListener("click", () => {
+    setOperator(els.operatorSelect.value);
+    nav("/operator-inbox.html");
+  });
+
+  els.btnOpenReview.addEventListener("click", () => {
+    const id = (els.bookingId.value || "").trim();
+    if (!id) return alert("Enter a Booking ID first (e.g., 101).");
+    nav(`/operator-review.html?bookingId=${encodeURIComponent(id)}`);
+  });
+
+  els.resetConfirm.addEventListener("input", () => {
+    const ok = (els.resetConfirm.value || "").trim().toUpperCase() === "RESET";
+    els.btnReset.disabled = !ok;
+    els.resetStatus.textContent = ok
+      ? "Reset armed. Click Reset Demo Data."
+      : "Reset is locked.";
+  });
+
+  els.btnReset.addEventListener("click", async () => {
+    if (!confirm("Reset demo data now?")) return;
+
+    els.resetStatus.textContent = "Resetting…";
+
+    const res = await fetch("/api/demo/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: "phase12-demo-home" }),
+    });
+
+    if (!res.ok) {
+      els.resetStatus.textContent = "Reset failed.";
+      return;
+    }
+
+    els.resetStatus.textContent = "Reset complete. Opening Inbox…";
+    setTimeout(() => nav("/operator-inbox.html"), 600);
+  });
+
+  // Initialise default operator
+  setOperator(localStorage.getItem(KEY_OPERATOR_MARINA) || "2");
+})();

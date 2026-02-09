@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BoatiesMate – Booking (Prototype)</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 520px; }
+    h2 { margin-top: 0; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input, select, textarea, button { width: 100%; padding: 8px; margin-top: 6px; box-sizing: border-box; }
+    button { margin-top: 14px; cursor: pointer; }
+    .row { display: flex; gap: 10px; }
+    .row > div { flex: 1; }
+    pre { background: #f5f5f5; padding: 10px; margin-top: 14px; font-size: 12px; white-space: pre-wrap; }
+    .card { border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin-top: 14px; }
+    .hint { font-size: 12px; color: #444; margin-top: 6px; }
+    code { background: #f0f0f0; padding: 1px 4px; border-radius: 4px; }
+    .field-error { outline: 2px solid #b00020; outline-offset: 1px; }
+
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #ddd; background:#f7f7f7; }
+    .badge-strong { border-color:#bcd; background:#eef6ff; }
+    .section-title { margin: 10px 0 6px 0; font-weight: bold; }
+    .small { font-size: 12px; color:#444; }
+    .kv { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+    .kv span { font-size:12px; color:#444; }
+    details { margin-top: 8px; }
+    details > summary { cursor: pointer; font-size: 12px; color:#2b5cab; }
+  </style>
+</head>
+<body>
+
+<h2>BoatiesMate – Prototype Booking</h2>
+
+<div class="card">
+  <label>API Base URL</label>
+  <input type="text" id="apiBase" value="http://localhost:3000" />
+
+  <label>Marina ID (filter moorings)</label>
+  <input type="number" id="marinaId" value="2" min="1" />
+
+  <button id="loadMooringsBtn" type="button">Load Moorings</button>
+  <div class="hint">
+    Loads from <code>/api/moorings?marinaId=…</code> (matches your working curl).
+  </div>
+
+  <label>Mooring</label>
+  <select id="mooringId" required>
+    <option value="">Click “Load Moorings” first…</option>
+  </select>
+</div>
+
+<div class="card">
+  <h3 style="margin: 0 0 6px 0;">Search Availability</h3>
+
+  <div class="hint" style="margin-bottom: 10px;">
+    Calls <code>GET /api/availability</code> and returns suitable, available moorings ranked by score.
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Marina ID</label>
+      <input type="number" id="availMarinaId" value="2" min="1" />
+    </div>
+    <div>
+      <label>Vessel</label>
+
+      <select id="availVesselId" required>
+        <option value="">Loading vessels…</option>
+      </select>
+
+      <button id="reloadVesselsBtn" type="button">Reload Vessels</button>
+      <div class="hint">Loads from <code>/api/vessels</code> using the API Base URL above.</div>
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Start Date</label>
+      <input type="date" id="availStartDate" required />
+    </div>
+    <div>
+      <label>End Date</label>
+      <input type="date" id="availEndDate" required />
+    </div>
+  </div>
+
+  <label>Block statuses</label>
+  <select id="availBlockStatuses">
+    <option value="approved" selected>approved (recommended for customer search)</option>
+    <option value="pending,approved">pending + approved (strict)</option>
+  </select>
+
+  <div class="row">
+    <div>
+      <button id="availSearchBtn" type="button">Search Availability</button>
+    </div>
+    <div>
+      <button id="availClearBtn" type="button">Clear results</button>
+    </div>
+  </div>  
+
+  <div id="availSummary" class="hint"></div>
+  <div id="availResults"></div>
+</div>
+
+<div class="card">
+  <h3 style="margin: 0 0 6px 0;">Create Booking (Owner)</h3>
+
+  <div class="row">
+    <div>
+      <label>Owner ID</label>
+      <input type="number" id="ownerId" value="2" min="1" required />
+    </div>
+    <div>
+      <label>Vessel ID</label>
+      <input type="number" id="vesselId" value="3" min="1" required />
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>Start Date</label>
+      <input type="date" id="startDate" required />
+    </div>
+    <div>
+      <label>End Date</label>
+      <input type="date" id="endDate" required />
+    </div>
+  </div>
+
+  <label>Notes (optional)</label>
+  <textarea id="notes" rows="3" placeholder="e.g., Visitor booking – Gulf Harbour"></textarea>
+
+  <button id="createBtn" type="button">Create Booking</button>
+
+  <div class="hint">
+    Submits JSON to <code>POST /api/bookings</code>. A new booking ID is auto-copied into the approval box below.
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin: 0 0 6px 0;">Approve Booking (Operator)</h3>
+
+  <label>Operator Token (paste from your Terminal TOKEN)</label>
+  <input type="text" id="token" placeholder="Paste token here (no 'Bearer ' prefix)" />
+
+  <label>Booking ID to approve</label>
+  <input type="number" id="approveBookingId" min="1" placeholder="e.g., 4" />
+
+  <button id="approveBtn" type="button">Approve Booking</button>
+  <button id="declineBtn" type="button">Decline Booking</button>
+
+  <div class="hint">
+    Calls <code>POST /api/bookings/:id/approve</code> with <code>Authorization: Bearer &lt;token&gt;</code>.
+  </div>
+</div>
+
+<div id="banner" class="card" style="display:none; border-left: 6px solid #888;">
+  <div id="bannerTitle" style="font-weight:bold;"></div>
+  <div id="bannerBody" style="margin-top:6px;"></div>
+</div>
+
+<pre id="result">Ready.</pre>
+
+<script src="/booking-form.js"></script>
+</body>
+</html>
+

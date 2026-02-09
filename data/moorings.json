@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "name": "Westhaven Berth C12",
+    "type": "berth",
+    "marinaId": 3,
+    "ownerId": null,
+    "isMarinaOwned": true,
+    "requiresMarinaNotification": false,
+    "maxLengthMetres": 12.0,
+    "maxDraftMetres": 2.5
+  },
+  {
+    "id": 2,
+    "name": "Westhaven Berth D20 (Private)",
+    "type": "berth",
+    "marinaId": 3,
+    "ownerId": 1,
+    "isMarinaOwned": false,
+    "requiresMarinaNotification": true,
+    "maxLengthMetres": 11.0,
+    "maxDraftMetres": 2.2
+  },
+  {
+    "id": 3,
+    "name": "Gulf Harbour Swing 101",
+    "type": "swing",
+    "marinaId": 2,
+    "ownerId": null,
+    "isMarinaOwned": true,
+    "requiresMarinaNotification": false,
+    "maxLengthMetres": 14.0,
+    "maxDraftMetres": 2.0
+  },
+  {
+    "id": 4,
+    "name": "Private Swing \u2013 Matiatia 1",
+    "type": "swing",
+    "marinaId": null,
+    "ownerId": 2,
+    "isMarinaOwned": false,
+    "requiresMarinaNotification": false,
+    "maxLengthMetres": 10.0,
+    "maxDraftMetres": 1.8
+  },
+  {
+    "id": 5,
+    "name": "Gulf Harbour Swing 102",
+    "type": "swing",
+    "marinaId": 2,
+    "ownerId": null,
+    "isMarinaOwned": true,
+    "requiresMarinaNotification": false,
+    "maxLengthMetres": 12.0,
+    "maxDraftMetres": 2.0
+  },
+  {
+    "id": 6,
+    "name": "Gulf Harbour Swing 103",
+    "type": "swing",
+    "marinaId": 2,
+    "ownerId": null,
+    "isMarinaOwned": true,
+    "requiresMarinaNotification": false,
+    "maxLengthMetres": 10.0,
+    "maxDraftMetres": 1.8
+  }
+]
