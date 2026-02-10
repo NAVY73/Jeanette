@@ -372,7 +372,7 @@ if (extraList.length) {
       var el = qs("apiBase");
       var v = (el && el.value ? el.value.trim() : "");
       var fromStorage = (localStorage.getItem("apiBaseUrl") || "").trim();
-      return (v || fromStorage || "http://localhost:3000").replace(/\/+$/, "");
+      return (v || fromStorage || "").replace(/\/+$/, "");
     }
   
     function getToken() {

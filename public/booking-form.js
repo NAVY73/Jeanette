@@ -282,7 +282,7 @@ async function loadMoorings({ silent = false, force = false } = {}) {
   const marinaId = Number(document.getElementById('marinaId').value);
 
   if (!base) {
-    if (!silent) show('API Base URL is blank. Set it to http://localhost:3000');
+    if (!silent) show('API Base URL is blank. Set it to ');
     return;
   }
   if (!Number.isFinite(marinaId) || marinaId <= 0) {
@@ -361,7 +361,7 @@ async function createBooking() {
     notes: document.getElementById('notes').value || ''
   };
 
-  if (!base) return show('API Base URL is blank. Set it to http://localhost:3000');
+  if (!base) return show('API Base URL is blank. Set it to ');
 
   show({ message: 'Creating booking…', url: `${base}/api/bookings`, payload });
 
@@ -723,7 +723,7 @@ async function searchAvailability() {
   const endDate = document.getElementById('availEndDate').value;
   const blockStatuses = document.getElementById('availBlockStatuses').value;
 
-  if (!base) return show('API Base URL is blank. Set it to http://localhost:3000');
+  if (!base) return show('API Base URL is blank. Set it to ');
   if (!Number.isFinite(marinaId) || marinaId <= 0) return show('Enter a valid Marina ID (e.g., 1).');
   if (!Number.isFinite(vesselId) || vesselId <= 0) return show('Select a valid Vessel.');
   if (!startDate || !endDate) return show('Start Date and End Date are required.');
