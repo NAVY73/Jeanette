@@ -3,7 +3,7 @@
     "id": 1,
     "name": "Westhaven Berth C12",
     "type": "berth",
-    "marinaId": 3,
+    "marinaId": 2,
     "ownerId": null,
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
