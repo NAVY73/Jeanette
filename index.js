@@ -26,28 +26,6 @@ function requestIdMiddleware(req, res, next) {
 }
 
 const app = express();
-  // PHASE13C_DEBUG_KEY_FINGERPRINT (TEMP — remove after fix)
-  app.get("/api/demo/_debug-key", (req, res) => {
-    const env = (process.env.DEMO_ADMIN_KEY || "");
-    const provided = (req.get("X-Demo-Admin-Key") || "");
-    const crypto = require("crypto");
-
-    const fp = (s) => ({
-      len: s.length,
-      first2: s.slice(0, 2),
-      last2: s.slice(-2),
-      sha12: crypto.createHash("sha256").update(s, "utf8").digest("hex").slice(0, 12),
-      hasSpace: s.includes(" "),
-      hasTab: s.includes("\t"),
-      hasNewline: s.includes("\n") || s.includes("\r"),
-    });
-    
-    res.json({
-      env: fp(env),
-      provided: fp(provided),
-      match: env === provided
-    });
-  });
 const PORT = process.env.PORT || 3000;
 
 const path = require("path");
@@ -97,8 +75,6 @@ const fs = require("fs");
   // ===== Phase 13: Protect demo admin endpoints in production =====
   const isProd = process.env.NODE_ENV === "production";
   const DEMO_ADMIN_KEY = process.env.DEMO_ADMIN_KEY || "";
-  console.log("DEMO_ADMIN_KEY startup len:", DEMO_ADMIN_KEY.length);
-  console.log("DEMO_ADMIN_KEY startup sha12:", require("crypto").createHash("sha256").update(DEMO_ADMIN_KEY, "utf8").digest("hex").slice(0, 12));  
   function requireDemoAdminKey(req, res) {
     if (!isProd) return true; // local/dev: allow
 
