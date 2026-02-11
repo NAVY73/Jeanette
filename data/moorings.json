@@ -7,7 +7,7 @@
     "ownerId": null,
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
-    "maxLengthMetres": 12.0,
+    "maxLengthMetres": 12,
     "maxDraftMetres": 2.5
   },
   {
@@ -18,41 +18,41 @@
     "ownerId": 1,
     "isMarinaOwned": false,
     "requiresMarinaNotification": true,
-    "maxLengthMetres": 11.0,
+    "maxLengthMetres": 11,
     "maxDraftMetres": 2.2
   },
   {
     "id": 3,
     "name": "Gulf Harbour Swing 101",
     "type": "swing",
-    "marinaId": 2,
+    "marinaId": 1,
     "ownerId": null,
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
-    "maxLengthMetres": 14.0,
-    "maxDraftMetres": 2.0
+    "maxLengthMetres": 14,
+    "maxDraftMetres": 2
   },
   {
     "id": 4,
-    "name": "Private Swing \u2013 Matiatia 1",
+    "name": "Private Swing – Matiatia 1",
     "type": "swing",
     "marinaId": null,
     "ownerId": 2,
     "isMarinaOwned": false,
     "requiresMarinaNotification": false,
-    "maxLengthMetres": 10.0,
+    "maxLengthMetres": 10,
     "maxDraftMetres": 1.8
   },
   {
     "id": 5,
     "name": "Gulf Harbour Swing 102",
     "type": "swing",
-    "marinaId": 2,
+    "marinaId": 1,
     "ownerId": null,
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
-    "maxLengthMetres": 12.0,
-    "maxDraftMetres": 2.0
+    "maxLengthMetres": 12,
+    "maxDraftMetres": 2
   },
   {
     "id": 6,
@@ -62,7 +62,7 @@
     "ownerId": null,
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
-    "maxLengthMetres": 10.0,
+    "maxLengthMetres": 10,
     "maxDraftMetres": 1.8
   }
 ]
