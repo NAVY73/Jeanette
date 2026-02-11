@@ -1,16 +1,5 @@
 [
   {
-    "id": 1,
-    "ownerId": 1,
-    "vesselId": 1,
-    "mooringId": 1,
-    "marinaId": 1,
-    "startDate": "2025-01-10",
-    "endDate": "2025-01-12",
-    "status": "pending",
-    "notes": "Visiting for weekend regatta"
-  },
-  {
     "id": 99,
     "ownerId": 2,
     "vesselId": 1,
@@ -69,28 +58,6 @@
     "declineReason": "Non-compliant documents"
   },
   {
-    "id": 5,
-    "ownerId": 2,
-    "vesselId": 3,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-20",
-    "endDate": "2026-01-23",
-    "status": "pending",
-    "notes": ""
-  },
-  {
-    "id": 6,
-    "ownerId": 2,
-    "vesselId": 2,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-20",
-    "endDate": "2026-01-23",
-    "status": "pending",
-    "notes": ""
-  },
-  {
     "id": 7,
     "ownerId": 2,
     "vesselId": 1,
@@ -106,17 +73,6 @@
     "decisionType": "declined"
   },
   {
-    "id": 8,
-    "ownerId": 2,
-    "vesselId": 2,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-16",
-    "endDate": "2026-01-18",
-    "status": "pending",
-    "notes": ""
-  },
-  {
     "id": 9,
     "ownerId": 2,
     "vesselId": 2,
@@ -130,28 +86,6 @@
     "approvedAt": null,
     "decisionByUserId": 1,
     "decisionType": "declined"
-  },
-  {
-    "id": 10,
-    "ownerId": 2,
-    "vesselId": 1,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-16",
-    "endDate": "2026-01-18",
-    "status": "pending",
-    "notes": ""
-  },
-  {
-    "id": 11,
-    "ownerId": 2,
-    "vesselId": 2,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-17",
-    "endDate": "2026-01-18",
-    "status": "pending",
-    "notes": ""
   },
   {
     "id": 12,
@@ -199,17 +133,6 @@
     "decisionType": "approved"
   },
   {
-    "id": 15,
-    "ownerId": 2,
-    "vesselId": 3,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-28",
-    "endDate": "2026-02-02",
-    "status": "pending",
-    "notes": ""
-  },
-  {
     "id": 16,
     "ownerId": 2,
     "vesselId": 1,
@@ -224,28 +147,6 @@
     "declineReason": "",
     "decisionByUserId": 1,
     "decisionType": "approved"
-  },
-  {
-    "id": 17,
-    "ownerId": 2,
-    "vesselId": 3,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-23",
-    "endDate": "2026-01-25",
-    "status": "pending",
-    "notes": ""
-  },
-  {
-    "id": 18,
-    "ownerId": 2,
-    "vesselId": 3,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-23",
-    "endDate": "2026-01-25",
-    "status": "pending",
-    "notes": ""
   },
   {
     "id": 19,
@@ -272,17 +173,6 @@
     "approvedAt": null,
     "decisionByUserId": 1,
     "decisionType": "declined"
-  },
-  {
-    "id": 21,
-    "ownerId": 2,
-    "vesselId": 3,
-    "mooringId": 1,
-    "marinaId": 1,
-    "startDate": "2026-01-25",
-    "endDate": "2026-01-27",
-    "status": "pending",
-    "notes": ""
   },
   {
     "id": 22,
@@ -316,43 +206,10 @@
     "declineReason": "Safety / weather conditions"
   },
   {
-    "id": 24,
-    "ownerId": 1,
-    "vesselId": 1,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-28",
-    "endDate": "2026-01-30",
-    "status": "pending",
-    "notes": ""
-  },
-  {
-    "id": 25,
-    "ownerId": 1,
-    "vesselId": 1,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-01-28",
-    "endDate": "2026-01-30",
-    "status": "pending",
-    "notes": ""
-  },
-  {
     "id": 26,
     "ownerId": 1,
     "vesselId": 2,
     "mooringId": 2,
-    "marinaId": 1,
-    "startDate": "2026-01-28",
-    "endDate": "2026-01-30",
-    "status": "pending",
-    "notes": ""
-  },
-  {
-    "id": 27,
-    "ownerId": 1,
-    "vesselId": 3,
-    "mooringId": 1,
     "marinaId": 1,
     "startDate": "2026-01-28",
     "endDate": "2026-01-30",
@@ -390,17 +247,6 @@
     "declineReason": "",
     "decisionByUserId": 1,
     "decisionType": "approved"
-  },
-  {
-    "id": 100,
-    "ownerId": 1,
-    "vesselId": 1,
-    "mooringId": 3,
-    "marinaId": 1,
-    "startDate": "2026-02-12",
-    "endDate": "2026-02-15",
-    "status": "pending",
-    "notes": "Demo booking (Phase 7)"
   },
   {
     "id": 101,
@@ -444,49 +290,5 @@
     "declineReason": "",
     "decisionByUserId": 1,
     "decisionType": "approved"
-  },
-  {
-    "id": 104,
-    "ownerId": 1,
-    "vesselId": 1,
-    "mooringId": 5,
-    "marinaId": 1,
-    "startDate": "2026-02-26",
-    "endDate": "2026-02-28",
-    "status": "pending",
-    "notes": "Demo booking (Phase 7) | T&C accepted: yes | T&C marina: Gulf Harbour Marina (ID 2) | T&C acceptedAt: 2026-02-01T04:43:56.412Z"
-  },
-  {
-    "id": 105,
-    "ownerId": 1,
-    "vesselId": 1,
-    "mooringId": 1,
-    "marinaId": 2,
-    "startDate": "2026-02-23",
-    "endDate": "2026-02-27",
-    "status": "pending",
-    "notes": "Demo booking (Phase 7) | T&C accepted: yes | T&C marina: Westhaven Marina (ID 3) | T&C acceptedAt: 2026-02-07T00:53:04.609Z"
-  },
-  {
-    "id": 106,
-    "ownerId": 1,
-    "vesselId": 1,
-    "mooringId": 1,
-    "marinaId": 2,
-    "startDate": "2026-02-18",
-    "endDate": "2026-02-20",
-    "status": "pending",
-    "notes": "Demo booking (Phase 7) | T&C accepted: yes | T&C marina: Westhaven Marina (ID 3) | T&C acceptedAt: 2026-02-07T01:17:11.074Z"
-  },
-  {
-    "id": 107,
-    "ownerId": 1,
-    "vesselId": 1,
-    "mooringId": 1,
-    "marinaId": 2,
-    "startDate": "2026-02-18",
-    "endDate": "2026-02-20",
-    "status": "pending",
-    "notes": "Demo booking (Phase 7) | T&C accepted: yes | T&C marina: Westhaven Marina (ID 3) | T&C acceptedAt: 2026-02-07T23:00:20.683Z"
   }
 ]
