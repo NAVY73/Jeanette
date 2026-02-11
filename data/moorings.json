@@ -3,7 +3,7 @@
     "id": 1,
     "name": "Westhaven Berth C12",
     "type": "berth",
-    "marinaId": 2,
+    "marinaId": 3,
     "ownerId": null,
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
@@ -64,5 +64,16 @@
     "requiresMarinaNotification": false,
     "maxLengthMetres": 10,
     "maxDraftMetres": 1.8
+  },
+  {
+    "id": 7,
+    "name": "Gulf Harbour Berth C12",
+    "type": "berth",
+    "marinaId": 2,
+    "ownerId": null,
+    "isMarinaOwned": true,
+    "requiresMarinaNotification": false,
+    "maxLengthMetres": 12,
+    "maxDraftMetres": 2.5
   }
 ]
