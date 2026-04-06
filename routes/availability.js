@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
 
 const { asyncHandler } = require('../utils/asyncHandler');
@@ -6,11 +8,11 @@ const { badRequest, notFound } = require('../utils/ApiError');
 
 const { checkSuitability, findAlternatives } = require('../rules/availability');
 
-// JSON data stores
-const bookings = require('../data/bookings.json');
-const vessels  = require('../data/vessels.json');
-const moorings = require('../data/moorings.json');
-const marinas  = require('../data/marinas.json');
+// JSON data stores (Phase 15: load fresh each request to avoid require-cache staleness)
+const DATA_DIR = path.join(__dirname, '..', 'data');
+function readJson(filename) {
+  return JSON.parse(fs.readFileSync(path.join(DATA_DIR, filename), 'utf8'));
+}
 
 // Helper: parse date safely
 function parseDate(value) {
@@ -29,7 +31,13 @@ function parseDate(value) {
 router.get(
   '/',
   asyncHandler(async (req, res) => {
-    const { marinaId, vesselId, startDate, endDate, blockStatuses, limit } = req.query;
+    const { marinaId, vesselId, startDate, endDate, blockStatuses, limit, servicePreference } = req.query;
+
+      // Phase 15: load data fresh per request (avoid require-cache staleness)
+      const bookings = readJson('bookings.json');
+      const vessels  = readJson('vessels.json');
+      const moorings = readJson('moorings.json');
+      const marinas  = readJson('marinas.json');
 
     // Field-level validation details for the UI
     const fieldErrors = [];
@@ -82,8 +90,17 @@ router.get(
       throw notFound('NOT_FOUND', 'Marina not found.');
     }
 
-    const vessel = vessels.find(v => Number(v.id) === Number(vesselId));
-    if (!vessel) {
+    const vesselRaw = vessels.find(v => Number(v.id) === Number(vesselId));
+    const vessel = vesselRaw
+        ? {
+            ...vesselRaw,
+            lengthMetres: vesselRaw.lengthMetres ?? vesselRaw.lengthM ?? null,
+            beamMetres:   vesselRaw.beamMetres   ?? vesselRaw.beamM   ?? null,
+            draftMetres:  vesselRaw.draftMetres  ?? vesselRaw.draftM  ?? null,
+          }
+        : null;
+
+      if (!vessel) {
       throw notFound('NOT_FOUND', 'Vessel not found.');
     }
 
@@ -96,6 +113,13 @@ router.get(
     let lim = parseInt(limit, 10);
     if (Number.isNaN(lim) || lim <= 0) lim = 20;
     if (lim > 100) lim = 100;
+// Phase 13C: service preference -> mooring type filter
+// supported: "either" | "berth" | "swing"
+const prefRaw = String(servicePreference || "either").toLowerCase().trim();
+const preferredMooringType =
+  (prefRaw === "berth" || prefRaw === "pontoon") ? "berth" :
+  (prefRaw === "swing" || prefRaw === "swing_mooring" || prefRaw === "swing mooring") ? "swing" :
+  null; // "either" or unknown => no filter
 
     // Availability search engine
     const available = findAlternatives({
@@ -105,14 +129,17 @@ router.get(
       marinaId: Number(marinaId),
       startDate: start,
       endDate: end,
-      preferredMooringType: null,
+      preferredMooringType,
       excludeMooringId: null,
       blockStatuses: block,
       limit: lim,
     });
 
     // Diagnostics only if nothing is available
-    const marinaMoorings = moorings.filter(m => Number(m.marinaId) === Number(marinaId));
+    const marinaMoorings = moorings
+    .filter(m => Number(m.marinaId) === Number(marinaId))
+    .filter(m => !preferredMooringType || String(m.type || '').toLowerCase().trim() === String(preferredMooringType).toLowerCase().trim());
+  
     const suitableIgnoringAvailability = marinaMoorings
       .filter(m => checkSuitability({ vessel, mooring: m }).passed)
       .map(m => ({
@@ -132,7 +159,7 @@ router.get(
         draftMetres: vessel.draftMetres,
         beamMetres: vessel.beamMetres,
       },
-      requested: { startDate, endDate },
+      requested: { startDate, endDate, servicePreference: prefRaw },
       blockStatuses: block,
       count: available.length,
       results: available,

@@ -143,7 +143,7 @@
         (docs || []).forEach((d) => {
           const k = normalizeDocType(d.type || d.docType || d.name);
           if (k && !expectedKeys.has(k)) {
-            displayDocs.push({ label: k.replace(/_/g, " "), doc: d });
+            displayDocs.push({ label: (String(k).toLowerCase() === "biofouling_inspection" ? "Biofouling Inspection" : k.replace(/_/g, " ")), doc: d });
           }
         });
 
@@ -297,46 +297,70 @@ if (extraList.length) {
     }
   
     function buildDecisionReasonLines(intel) {
-      var lines = [];
-  
-      if (!intel) return lines;
-  
-      // Preferred v2: blockingReasons / warnings
-      if (Array.isArray(intel.blockingReasons) && intel.blockingReasons.length) {
-        intel.blockingReasons.forEach(function (br) {
-          if (!br) return;
-          var msg = br.message ? String(br.message) : "Blocked";
-          var meta = br.meta || null;
-  
-          // Optional: append overlap IDs for clarity (matches Inbox behaviour)
-          if (meta && Array.isArray(meta.overlapBookingIds) && meta.overlapBookingIds.length) {
-            msg += " Overlap booking(s): " + meta.overlapBookingIds.join(", ");
-          }
-          lines.push(msg);
-        });
+        var lines = [];
+
+        if (!intel) return lines;
+
+        // Preferred v2: blockingReasons / warnings
+        if (Array.isArray(intel.blockingReasons) && intel.blockingReasons.length) {
+          intel.blockingReasons.forEach(function (br) {
+            if (!br) return;
+
+            var code = String(br.code || "").toUpperCase();
+            var msg = br.message ? String(br.message) : "Blocked";
+            var meta = br.meta || null;
+
+            // Phase 13C UI polish: show servicePreference mismatch + suggested alternatives
+            if (code === "SERVICE_PREFERENCE_MISMATCH" && meta) {
+              var sp = meta.servicePreference ? String(meta.servicePreference).toUpperCase() : "";
+              var prefType = meta.preferredMooringType ? String(meta.preferredMooringType).toUpperCase() : "";
+              var allocType = meta.allocatedMooringType ? String(meta.allocatedMooringType).toUpperCase() : "";
+              lines.push("Preference mismatch: requested " + (sp || prefType || "(unknown)") + ", allocated " + (allocType || "(unknown)"));
+
+              if (Array.isArray(meta.preferredTypeAlternatives) && meta.preferredTypeAlternatives.length) {
+                var altNames = meta.preferredTypeAlternatives.slice(0, 3).map(function (a) {
+                  if (!a) return "";
+                  var n = a.name ? String(a.name) : ("Mooring " + String(a.mooringId || ""));
+                  var id = (a.mooringId != null) ? (" (ID " + String(a.mooringId) + ")") : "";
+                  return n + id;
+                }).filter(Boolean);
+
+                if (altNames.length) {
+                  lines.push("Suggested preferred alternatives: " + altNames.join(", "));
+                }
+              }
+            }
+
+            // Optional: append overlap IDs for clarity (matches Inbox behaviour)
+            if (meta && Array.isArray(meta.overlapBookingIds) && meta.overlapBookingIds.length) {
+              msg += " Overlap booking(s): " + meta.overlapBookingIds.join(", ");
+            }
+
+            lines.push(msg);
+          });
+          return lines;
+        }
+
+        if (Array.isArray(intel.warnings) && intel.warnings.length) {
+          intel.warnings.forEach(function (w) {
+            if (!w) return;
+            var msg2 = w.message ? String(w.message) : "Warning";
+            lines.push(msg2);
+          });
+          return lines;
+        }
+
+        // Legacy fallback: reasons: string[]
+        if (Array.isArray(intel.reasons) && intel.reasons.length) {
+          intel.reasons.forEach(function (r) {
+            if (r == null) return;
+            lines.push(String(r));
+          });
+          return lines;
+        }
+
         return lines;
       }
-  
-      if (Array.isArray(intel.warnings) && intel.warnings.length) {
-        intel.warnings.forEach(function (w) {
-          if (!w) return;
-          var msg2 = w.message ? String(w.message) : "Warning";
-          lines.push(msg2);
-        });
-        return lines;
-      }
-  
-      // Legacy fallback: reasons: string[]
-      if (Array.isArray(intel.reasons) && intel.reasons.length) {
-        intel.reasons.forEach(function (r) {
-          if (r == null) return;
-          lines.push(String(r));
-        });
-        return lines;
-      }
-  
-      return lines;
-    }
   
     function renderDecisionIntel(decisionIntel) {
       var el = qs("decisionIntelBox");
@@ -499,6 +523,65 @@ function clearDeclineReasonInput() {
       if (el) el.textContent = JSON.stringify(pack, null, 2);
     }
   
+    function bmEscHtml(x){
+  return String(x==null?"":x)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+function renderAppSummary(pack){
+  try {
+    var el = qs("appSummary");
+    if (!el) return;
+    pack = pack || {};
+    var b = pack.booking || {};
+    var o = pack.owner || {};
+    var v = pack.vessel || {};
+
+    function pill(label, value){
+      if (value==null || value==="") return "";
+      return '<span class="pill"><span class="label">' + bmEscHtml(label) + ':</span>' + bmEscHtml(value) + '</span>';
+    }
+
+    var start = b.startDate || "";
+    var end = b.endDate || "";
+    var dates = (start && end) ? (start + " → " + end) : (start || end || "");
+
+    var html = '';
+    html += '<div class="row">'
+      + pill("Booking", b.id)
+      + pill("Status", b.status)
+      + pill("Service", b.servicePreference)
+      + pill("Dates", dates)
+      + pill("Mooring ID", b.mooringId)
+      + '</div>';
+
+    html += '<div class="row">'
+      + pill("Boatie", o.fullName)
+      + pill("Email", o.email)
+      + pill("Phone", o.phone)
+      + pill("Emergency", o.emergencyContactName ? (o.emergencyContactName + (o.emergencyContactPhone ? " ("+o.emergencyContactPhone+")" : "")) : "")
+      + '</div>';
+
+    html += '<div class="row">'
+      + pill("Vessel", v.name)
+      + pill("Type", v.type)
+      + pill("LOA (m)", v.lengthOverallM)
+      + pill("Beam (m)", v.beamM)
+      + pill("Draft (m)", v.draftM)
+      + pill("Shore Power", (v.hasShorePower===true ? "Yes" : (v.hasShorePower===false ? "No" : "")))
+      + pill("Rego", v.registrationNumber)
+      + '</div>';
+
+    el.innerHTML = html || "";
+  } catch(e) {
+    // fail open: never break operator-review
+  }
+}
+
     // ---------- Main ----------
     async function loadPack() {
       clearBanner();
@@ -514,6 +597,7 @@ function clearDeclineReasonInput() {
       try {
         var pack = await fetchJson(base + "/api/bookings/" + bookingId + "/application-pack");
         setRaw(pack);
+        renderAppSummary(pack);
         renderPack(pack, bookingId);
         renderComplianceDocuments(pack);
       } catch (e) {

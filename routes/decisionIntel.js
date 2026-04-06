@@ -9,8 +9,6 @@ const { evaluateDecisionIntel } = require("../services/decisionIntel");
 // GET /api/bookings/:id/decision-intel
 router.get(
     "/api/bookings/:id/decision-intel",
-    requireAuth,
-    requireRole(["marina_operator"]),
     async (req, res) => {  
   try {
     const bookingId = Number(req.params.id);

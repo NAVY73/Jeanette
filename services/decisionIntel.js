@@ -4,9 +4,15 @@
 // This implementation matches your current architecture:
 // - JSON files via readJson('file.json', default)
 // - No dependency on a non-existent utils/dataStore module
+//
+// Phase 13C enhancement:
+// - servicePreference ("either" | "berth" | "swing") must match allocated mooring.type unless "either"
+// - when mismatch, include preferred-type alternatives (if any)
 
 const path = require("path");
 const fs = require("fs");
+
+const { findAlternatives } = require("../rules/availability");
 
 // ---- JSON helpers (mirrors the pattern used in routes/booking.js) ----
 function dataPath(fileName) {
@@ -46,6 +52,7 @@ function classifyReasons(blockingReasons) {
   if (blockingReasons.some(r => r.code === "MOORING_TOO_SHORT")) return "STRUCTURAL";
   if (blockingReasons.some(r => r.code === "DRAFT_TOO_DEEP")) return "STRUCTURAL";
   if (blockingReasons.some(r => r.code === "BOOKING_ALREADY_DECIDED")) return "TEMPORARY";
+  if (blockingReasons.some(r => r.code === "SERVICE_PREFERENCE_MISMATCH")) return "STRUCTURAL";
   return blockingReasons.length ? "UNKNOWN" : "NONE";
 }
 
@@ -63,6 +70,20 @@ function pickNumber(obj, keys) {
     }
   }
   return NaN;
+}
+
+function safeDate(v) {
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function normalizePreference(servicePreference) {
+  const prefRaw = String(servicePreference || "either").toLowerCase().trim();
+  const preferredMooringType =
+    (prefRaw === "berth" || prefRaw === "pontoon") ? "berth" :
+    (prefRaw === "swing" || prefRaw === "swing_mooring" || prefRaw === "swing mooring") ? "swing" :
+    null; // either/unknown
+  return { prefRaw, preferredMooringType };
 }
 
 // ---- Main evaluator ----
@@ -103,6 +124,46 @@ async function evaluateDecisionIntel(bookingId) {
       blockingReasons,
       warnings
     };
+  }
+
+  // RULE 0 (Phase 13C): Service Preference must match allocated mooring type (unless "either")
+  const { prefRaw, preferredMooringType } = normalizePreference(booking.servicePreference);
+  if (preferredMooringType && String(mooring.type) !== String(preferredMooringType)) {
+    const start = safeDate(booking.startDate);
+    const end = safeDate(booking.endDate);
+
+    let preferredTypeAlternatives = [];
+    if (start && end) {
+      try {
+        preferredTypeAlternatives = findAlternatives({
+          moorings,
+          bookings,
+          vessel,
+          marinaId: Number(booking.marinaId),
+          startDate: start,
+          endDate: end,
+          preferredMooringType,                 // hard filter (berth/swing)
+          excludeMooringId: Number(booking.mooringId),
+          blockStatuses: ["approved"],
+          limit: 5,
+        });
+      } catch (e) {
+        // keep intel resilient; alternatives are optional
+      }
+    }
+
+    blockingReasons.push(
+      ruleResult({
+        code: "SERVICE_PREFERENCE_MISMATCH",
+        message: "Booking preference does not match allocated mooring type.",
+        meta: {
+          servicePreference: prefRaw,
+          preferredMooringType,
+          allocatedMooringType: mooring.type || null,
+          preferredTypeAlternatives,
+        }
+      })
+    );
   }
 
   // RULE 1: Already decided

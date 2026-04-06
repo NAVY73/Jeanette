@@ -22,6 +22,13 @@ function rangesOverlapInclusive(startA, endA, startB, endB) {
   function checkSuitability({ vessel, mooring }) {
     const reasons = [];
   
+
+    // PHASE16_BEAM_CONSTRAINT: optional beam limit (mainly for berths)
+    const vesselBeam = (vessel && (vessel.beamMetres ?? vessel.beamM)) ?? vessel?.beam ?? null;
+    const maxBeam = (mooring && mooring.maxBeamMetres) ?? null;
+    if (maxBeam != null && vesselBeam != null && Number(vesselBeam) > Number(maxBeam)) {
+      reasons.push(`Beam ${vesselBeam}m exceeds max beam ${maxBeam}m`);
+    }
     if (!vessel) reasons.push('Vessel not found');
     if (!mooring) reasons.push('Mooring not found');
   
@@ -95,6 +102,9 @@ function rangesOverlapInclusive(startA, endA, startB, endB) {
       if (Number(m.marinaId) !== Number(marinaId)) continue;
       if (excludeMooringId != null && Number(m.id) === Number(excludeMooringId)) continue;
       if (m.status && String(m.status) !== 'active') continue;
+
+        // Phase 13C: hard filter by mooring type when a preference is specified
+        if (preferredMooringType && String(m.type) !== String(preferredMooringType)) continue;
   
       // Suitability
       const suitability = checkSuitability({ vessel, mooring: m });

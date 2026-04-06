@@ -61,12 +61,21 @@ function computeDocCompliance(doc, rule, todayUtc) {
 
 router.get('/check', (req, res) => {
   const marinaId = Number(req.query.marinaId);
+    const vesselId = Number(req.query.vesselId); // optional
   if (!marinaId) {
     return res.status(400).json({ error: 'marinaId query param is required' });
   }
 
-  const vessel = readJson('vesselProfile.json', null);
-  const docs = readJson('vesselDocuments.json', []);
+  let vessel = readJson('vesselProfile.json', null);
+    // If vesselId is provided, prefer the actual vessel record from vessels.json
+    if (vesselId) {
+      const vesselsAll = readJson('vessels.json', []);
+      vessel = (Array.isArray(vesselsAll) ? vesselsAll : []).find(v => Number(v && v.id) === vesselId) || vessel;
+    }
+  let docs = readJson('vesselDocuments.json', []);
+    if (vesselId) {
+      docs = (docs || []).filter(d => Number(d && d.vesselId) === vesselId);
+    }
   const requirementsAll = readJson('marinaRequirements.json', []);
   const requirements = requirementsAll.find(r => Number(r.marinaId) === marinaId) || null;
 

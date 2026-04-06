@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
  * For prototype: we store file metadata but not actual file upload yet.
  *
  * Required fields (minimum):
- * - type: "EWoF" | "INSURANCE" | "SHORE_POWER_LEAD_TEST"
+ * - type: "EWoF" | "INSURANCE" | "SHORE_POWER_LEAD_TEST" | "BIOFOULING_INSPECTION"
  * - issueDate: "YYYY-MM-DD"
  * - expiryDate: "YYYY-MM-DD"
  */
@@ -30,7 +30,7 @@ router.post('/', (req, res) => {
 
   const body = req.body || {};
   if (!body.type) {
-    return res.status(400).json({ error: 'type is required (EWoF, INSURANCE, SHORE_POWER_LEAD_TEST)' });
+    return res.status(400).json({ error: 'type is required (EWoF, INSURANCE, SHORE_POWER_LEAD_TEST, BIOFOULING_INSPECTION)' });
   }
   if (!body.issueDate || !body.expiryDate) {
     return res.status(400).json({ error: 'issueDate and expiryDate are required (YYYY-MM-DD)' });

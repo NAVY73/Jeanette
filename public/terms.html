@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
-  <title>BoatiesMate – Marina Terms & Conditions (Demo)</title>
+  <title>BoatiesMate – Marina Terms & Conditions</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 16px; max-width: 760px; margin: 0 auto; }
     h2 { margin-top: 0; }
@@ -15,7 +15,7 @@
 </head>
 <body>
   <div style="margin: 12px 0 14px;">
-    <a class="btn-secondary" href="/">← Back to Home</a>
+    <a class="btn-secondary" href="/boatie-demo.html">← Back to Boatie Booking Form</a>
   </div>
   <header class="brand-header">
     <div class="brand-header__inner">
@@ -27,7 +27,7 @@
       <span class="role-pill role-pill--boatie">Boatie</span>
     </div>
   </header>
-  <h2>Marina Terms & Conditions (Demo)</h2>
+  <h2>Marina Terms & Conditions</h2>
   <div class="muted">This is a demo page to simulate marina terms being presented to the boatie prior to arrival.</div>
 
   <div class="card">
@@ -76,3 +76,36 @@
   </script>
 </body>
 </html>
+
+<!-- === BM_PATCH15A_TERMS_RETURN_BACK === -->
+<script>
+(function(){
+  try{
+    function norm(s){ return String(s||"").replace(/\s+/g," ").trim().toLowerCase(); }
+
+    // Find a button/link that looks like "Return to booking form"
+    const candidates = Array.from(document.querySelectorAll("a,button,input[type=button],input[type=submit]"));
+    const btn = candidates.find(el => {
+      const t = norm(el.textContent || el.value || "");
+      return (t.includes("return") || t.includes("back")) && (t.includes("booking") || t.includes("form"));
+    });
+
+    if (!btn) return;
+
+    btn.addEventListener("click", function(e){
+      try{ e.preventDefault(); }catch(_){}
+      try{
+        // Best: go back to the same filled form instance
+        if (window.history && window.history.length > 1){
+          window.history.back();
+          return;
+        }
+      }catch(_){}
+      // Fallback: no history (e.g. opened in new tab)
+      window.location.href = "/boatie-demo.html?bmRestore=1";
+    }, true);
+  }catch(e){}
+})();
+</script>
+<!-- === /BM_PATCH15A_TERMS_RETURN_BACK === -->
+

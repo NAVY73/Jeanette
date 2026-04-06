@@ -303,7 +303,7 @@ function $(id) {
     const docs = await loadDocs();
     renderDocs(docs);
     setInsuranceFieldVisibility();
-    showStatus('ok', 'Loaded profile, vessel, and documents.');
+    try{ showStatus('ok', ''); }catch(e){}
   }
   
   document.addEventListener('DOMContentLoaded', () => {
@@ -323,4 +323,99 @@ function $(id) {
   
     reloadAll().catch(err => showStatus('bad', err.message));
   });
-  
+
+// =====================================================
+// Phase 15 CLEAN: Owner/Vessel save -> localStorage IDs
+// Single source of truth (avoid conflicting handlers)
+// =====================================================
+
+function phase15Set(key, val) {
+  try {
+    if (val === null || val === undefined || val === "") return;
+    localStorage.setItem(key, String(val));
+  } catch (e) {}
+}
+
+async function phase15SaveOwnerClean() {
+  try {
+    const payload = {
+      fullName: $("owner_fullName").value.trim(),
+      email: $("owner_email").value.trim(),
+      phone: $("owner_phone").value.trim(),
+      region: $("owner_region").value.trim(),
+      addressLine1: $("owner_addressLine1").value.trim(),
+      addressLine2: $("owner_addressLine2").value.trim(),
+      city: $("owner_city").value.trim(),
+      postcode: $("owner_postcode").value.trim(),
+      emergencyName: $("owner_emergencyName").value.trim(),
+      emergencyPhone: $("owner_emergencyPhone").value.trim()
+    };
+
+    const resp = await fetchJson(apiBase() + "/api/owners", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const owner = resp.owner || resp;
+    if (!owner || !owner.id) throw new Error("Owner saved but could not read owner.id");
+
+    phase15Set("BM_OWNER_ID", owner.id);
+    $("ownerMeta").textContent = "Owner ID: " + owner.id;
+
+    showStatus("ok", "Owner saved. BM_OWNER_ID = " + owner.id);
+  } catch (e) {
+    showStatus("bad", "Owner save failed: " + (e.message || e));
+  }
+}
+
+async function phase15SaveVesselClean() {
+  try {
+    const ownerId = Number(localStorage.getItem("BM_OWNER_ID") || 0);
+    if (!ownerId) throw new Error("Save Boatie Profile first (BM_OWNER_ID missing).");
+
+    const payload = {
+      ownerId,
+      name: $("vessel_name").value.trim(),
+      type: $("vessel_type").value.trim(),
+      lengthM: ($("vessel_loa").value === "" ? null : Number($("vessel_loa").value)),
+      beamM: ($("vessel_beam").value === "" ? null : Number($("vessel_beam").value)),
+      draftM: ($("vessel_draft").value === "" ? null : Number($("vessel_draft").value)),
+      registration: $("vessel_reg").value.trim(),
+      hasShorePower: $("vessel_shorePower").checked
+    };
+
+    const resp = await fetchJson(apiBase() + "/api/vessels", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const vessel = resp.vessel || resp;
+    if (!vessel || !vessel.id) throw new Error("Vessel saved but could not read vessel.id");
+
+    phase15Set("BM_VESSEL_ID", vessel.id);
+    $("vesselMeta").textContent = "Vessel ID: " + vessel.id;
+
+    showStatus("ok", "Vessel saved. BM_VESSEL_ID = " + vessel.id);
+  } catch (e) {
+    showStatus("bad", "Vessel save failed: " + (e.message || e));
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnOwner = $("btnSaveOwner");
+  const btnVessel = $("btnSaveVessel");
+
+  if (btnOwner) {
+    // Replace any existing onclick to avoid double-firing
+    btnOwner.onclick = null;
+    btnOwner.addEventListener("click", phase15SaveOwnerClean);
+  }
+
+  if (btnVessel) {
+    btnVessel.onclick = null;
+    btnVessel.addEventListener("click", phase15SaveVesselClean);
+  }
+});
+

@@ -28,7 +28,18 @@
     .kv span { font-size:12px; color:#444; }
     details { margin-top: 8px; }
     details > summary { cursor: pointer; font-size: 12px; color:#2b5cab; }
-  </style>
+  
+/* BM_UI_POLISH_V1: investor-demo polish (safe UI-only) */
+h1, .page-title { letter-spacing: 0.2px; }
+.card { margin-top: 14px; }
+.card + .card { margin-top: 14px; }
+label { display:block; margin-top: 10px; }
+input, select, textarea { margin-top: 6px; }
+.section-title { margin-top: 16px; font-weight: 700; }
+button[type="submit"], .btn-primary { font-weight: 700; padding: 12px 16px; border-radius: 10px; }
+.status, .status-panel, .alert-success { border-radius: 12px; padding: 12px 14px; }
+
+</style>
 </head>
 <body>
   <div style="margin: 12px 0 14px;">
@@ -50,7 +61,7 @@
   </header>
 
 <div class="card">
-  <label>API Base URL</label>
+  <label><!-- API Base URL (hidden for demo) --></label>
   <input type="text" id="apiBase" value="" />
 
   <label>Marina ID (filter moorings)</label>
@@ -87,7 +98,7 @@
       </select>
 
       <button id="reloadVesselsBtn" type="button" class="btn-secondary">Reload Vessels</button>
-      <div class="hint">Loads from <code>/api/vessels</code> using the API Base URL above.</div>
+      <div class="hint">Loads from <code>/api/vessels</code> using the <!-- API Base URL (hidden for demo) --> above.</div>
     </div>
   </div>
 

@@ -34,7 +34,6 @@
 <body class="operator-inbox">
   <div class="demo-badge">BoatiesMate Prototype — Demo Mode<small>Phase 11</small></div>
   <div class="muted" style="margin-bottom:12px;">
-    <a class="btn-secondary" href="/">← Back to Home</a>
   </div>
   <header class="brand-header">
     <div class="brand-header__inner">
@@ -47,11 +46,12 @@
     </div>
   </header>
   
-  <h2>Operator Inbox</h2>
-  <div class="muted">
-    Lists bookings scoped to the logged-in operator’s marina. Click the link to open the Application Pack.
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+    <h2 style="margin:0;">Operator Inbox</h2>
+    <button id="btnInboxReset" type="button" class="btn-secondary">Reset Demo</button>
   </div>
-  <div style="padding:6px 0; color:#b00020; font-weight:bold;">INBOX VERSION CHECK: 2026-01-28-A</div>
+
+
 
   <div class="card">
     <div class="row" style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
@@ -64,7 +64,7 @@
       <div style="border:1px solid #ddd; padding:12px; border-radius:8px; margin:12px 0;">
         
 
-        <div style="font-weight:bold; margin-bottom:6px;">Operator Login (Prototype)</div>
+        <div style="font-weight:bold; margin-bottom:6px;">Operator Login</div>
         <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; position:relative;">
 
 <label style="display:block; margin-top:12px; font-weight:bold;">Quick Select Operator</label>
@@ -94,7 +94,7 @@
       
       </div>
 
-      <div style="margin-top:8px;">
+      <div style="margin-top:8px; display:none;" hidden aria-hidden="true">
   <button id="btnDevTools" class="btn-secondary" type="button">Developer tools</button>
   <div id="devToolsWrap" style="display:none; margin-top:8px;">
     <button id="btnToggleJson" class="btn-secondary" type="button">Toggle Raw JSON</button>
@@ -105,9 +105,9 @@
         </div>
 
         <div id="rightFilters" style="flex:0 0 360px; max-width:360px; margin-left:auto;">
-<div>
+<div style="display:none;" hidden aria-hidden="true">
         <label>API Base URL</label>
-        <input id="apiBase" value="" placeholder="(optional) leave blank for hosted demo" />
+        <input id="apiBase" value="" placeholder="" />
         <div class="muted">Leave blank for same-origin (recommended).</div>
       </div>
 
@@ -121,9 +121,29 @@
           <option value="all">all</option>
         </select>
       </div>
+        <!-- PHASE17_SORT_CONTROLS -->
+
+        <div style="margin-top:12px;"></div>
+        <div>
+          <label>Sort By</label>
+          <select id="sortBy">
+            <option value="start" selected>Start date</option>
+            <option value="created">Created date</option>
+          </select>
+          <div class="muted">Pending bookings are always prioritised first.</div>
+        </div>
+
+        <div style="margin-top:12px;"></div>
+        <div>
+          <label>Sort Direction</label>
+          <select id="sortDir">
+            <option value="asc" selected>Ascending (earliest first)</option>
+            <option value="desc">Descending (latest first)</option>
+          </select>
+        </div>
         
 
-          <div class="form-row" id="dateRangeRow" style="margin-top:14px; style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+      <div class="form-row" id="dateRangeRow" style="margin-top:14px; display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
   <div class="col" style="flex:1; min-width:220px;">
     <label>From (optional)</label>
     <input id="from" type="date" />
@@ -134,9 +154,12 @@
     <input id="to" type="date" />
   </div>
 
-  <div class="col" style="flex:0 0 auto; min-width:auto;">
+  <div class="col" style="flex:0 0 auto; min-width:auto; display:flex; gap:10px; align-items:flex-end;">
     <button id="btnLoad" type="button" class="btn-primary" style="background: var(--ocean, #0b2d4d); border:1px solid var(--ocean, #0b2d4d); color:#fff; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer; white-space:nowrap;">
       Load Inbox
+    </button>
+    <button id="btnResetFilters" type="button" style="background:#fff; border:1px solid #cbd5e1; color:#0b2d4d; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer; white-space:nowrap;">
+      Reset Filters
     </button>
   </div>
 </div>
@@ -149,32 +172,85 @@
   </div>
 
 <script>
+  // PHASE19_MARINA_LABEL_FIX: map marinaId -> marina name (avoid array index bugs)
+  let marinaNameById = {};
+  async function loadMarinaNameMap() {
+    try {
+      const r = await fetch("/api/marinas");
+      const d = await r.json();
+      const list = Array.isArray(d) ? d : (d.marinas || []);
+      marinaNameById = {};
+      for (const m of list) marinaNameById[Number(m.id)] = m.name;
+    } catch (e) {
+      marinaNameById = {};
+    }
+  }
+
+
   // ---------- Helpers ----------
   function qs(id) { return document.getElementById(id); }
-  
-  
-    // Phase 11: Developer tools reveal (hides raw JSON during demos)
-    document.addEventListener("DOMContentLoaded", () => {
-      const devBtn = qs("btnDevTools");
-      const wrap = qs("devToolsWrap");
-      if (devBtn && wrap) {
-        devBtn.addEventListener("click", () => {
-          wrap.style.display = (wrap.style.display === "none" || wrap.style.display === "") ? "block" : "none";
-        });
 
-        // If JSON exists, show the panel when dev tools are opened
-        if (wrap.style.display === "block") {
-          const jw = qs("jsonWrap");
-          if (jw && (jw.innerHTML || "").trim().length > 0) {
-            jw.style.display = "block";
-            const st = qs("jsonToggleStatus");
-            if (st) st.textContent = "Raw JSON panel: visible";
-          }
-        }
+  async function resetDemoFromInbox() {
+    const btn = qs("btnInboxReset");
+    const oldText = btn ? btn.textContent : "Reset Demo";
+    if (!confirm("Reset demo data now? This restores bookings from baseline.")) return;
 
+    try {
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Resetting…";
       }
-    });
 
+      const res = await fetch("/api/demo/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "operator-inbox-header-reset" })
+      });
+
+      const text = await res.text();
+      let data = null; try { data = JSON.parse(text); } catch (e) {}
+
+      if (!res.ok) {
+        alert("Reset failed (HTTP " + res.status + "). " + ((data && data.message) ? data.message : text));
+        return;
+      }
+
+      // Clear boatie/browser-side demo state so next walkthrough starts clean
+      try { sessionStorage.removeItem("bmSubmitInFlight"); } catch (e) {}
+      try { sessionStorage.removeItem("bmSubmittedBookingId"); } catch (e) {}
+      try { sessionStorage.removeItem("bmBoatieDraft"); } catch (e) {}
+      try { localStorage.removeItem("bmDemoLastSubmittedBookingId"); } catch (e) {}
+      try { localStorage.removeItem("bmDemoIdentity"); } catch (e) {}
+      try { localStorage.removeItem("bmStableIdentity"); } catch (e) {}
+      try { window.__bmSubmitInFlight = false; } catch (e) {}
+      try { window.__bmSubmitDone = false; } catch (e) {}
+      try { window.__bmSubmittedBookingId = ""; } catch (e) {}
+
+      alert((data && data.message) ? data.message : "Reset complete.");
+      location.reload();
+    } catch (e) {
+      alert("Reset failed (server not reachable).");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+  }
+
+  const inboxResetBtn = qs("btnInboxReset");
+  if (inboxResetBtn) {
+    inboxResetBtn.addEventListener("click", resetDemoFromInbox);
+  }
+  function key(v) {
+  // PHASE19_KEY_FIX: stable id keying (prevents marinaId 2/3 collisions)
+  if (v === null || v === undefined) return "";
+  const n = Number(v);
+  if (!Number.isFinite(n)) return String(v).trim();
+  return String(n);
+  }
+
+        // PHASE19_NOTE: removed auto-show JSON panel block (was referencing 'wrap' before declaration)
     // Phase 11: ensure Toggle Raw JSON always works (even if other handlers change)
     const jsonBtn = qs("btnToggleJson");
     const jsonWrap = qs("jsonWrap");
@@ -192,33 +268,23 @@
       });
     }
 
-function esc(s) {
-    // Avoid replaceAll for maximum compatibility
-    s = String((s === undefined || s === null) ? "" : s);
-    s = s.replace(/&/g, "&amp;");
-    s = s.replace(/</g, "&lt;");
-    s = s.replace(/>/g, "&gt;");
-    s = s.replace(/"/g, "&quot;");
-    s = s.replace(/'/g, "&#39;");
-    return s;
-  }
-
-  function key(v) { return String((v === undefined || v === null) ? "" : v); }
-
-  // API base: prefer the textbox if present, otherwise fall back to localStorage, otherwise default.
-  function apiBase() {
-    var input = qs("apiBase");
-    var v = (input && input.value ? input.value : "").trim();
-
-    if (!v) {
-      v = (localStorage.getItem("apiBaseUrl") || "").trim();
-    }
-    if (!v) {
-  // Default API port (matches index.js default)
-  v = "";
+    function esc(s) {
+  // Avoid replaceAll for maximum compatibility
+  s = String((s === undefined || s === null) ? "" : s);
+  s = s.replace(/&/g, "&amp;");
+  s = s.replace(/</g, "&lt;");
+  s = s.replace(/>/g, "&gt;");
+  s = s.replace(/"/g, "&quot;");
+  s = s.replace(/'/g, "&#39;");
+  return s;
 }
-    return v.replace(/\/+$/, "");
-  }
+
+function prefLabel(p) {
+  p = String(p || "either").toLowerCase().trim();
+  if (p === "berth") return "Berth";
+  if (p === "swing") return "Swing Mooring";
+  return "Either / Best Available";
+}
 
   // Token: accept multiple keys + handle accidental JSON.stringify storage
   function getToken() {
@@ -246,9 +312,24 @@ function esc(s) {
   function authToken() {
     return getToken();
   }
+// API base: prefer the textbox if present, otherwise fall back to localStorage, otherwise default.
+// NOTE: named apiBaseUrl() to avoid collision with <input id="apiBase"> in Safari.
+function apiBaseUrl() {
+  var input = qs("apiBase");
+  var v = (input && input.value ? input.value : "").trim();
+
+  if (!v) {
+    v = (localStorage.getItem("apiBaseUrl") || "").trim();
+  }
+  if (!v) {
+    // same-origin default
+    v = "";
+  }
+  return v.replace(/\/+$/, "");
+}
 
   async function apiGet(path) {
-    const base = apiBase();
+    const base = apiBaseUrl();
     const url = (base ? (base.replace(/\/$/, "") + path) : path);
 
     const token = getToken();
@@ -331,38 +412,26 @@ function loadInboxFiltersIntoUI() {
 
   function decisionIntelLabel(intel) {
   if (!intel) return "UNKNOWN";
+  if (intel.approvable === true) return "GREEN";
 
-  // Preferred v2
-  if (intel.approvable === true) return "APPROVABLE";
   var c = String(intel.classification || "").toUpperCase();
-  if (c === "TEMPORARY") return "TEMP_UNAVAILABLE";
-  if (c === "STRUCTURAL") return "UNSUITABLE";
-  if (c === "COMPLIANCE") return "NEEDS_COMPLIANCE";
+  if (c.indexOf("RED") >= 0 || c.indexOf("BLOCK") >= 0 || c.indexOf("DECLINE") >= 0) return "RED";
+  if (c.indexOf("AMBER") >= 0 || c.indexOf("WARN") >= 0 || c.indexOf("REVIEW") >= 0) return "AMBER";
+  if (c.indexOf("GREEN") >= 0 || c.indexOf("OK") >= 0 || c.indexOf("APPROVABLE") >= 0) return "GREEN";
 
-  // Legacy fallback
   var s = String(intel.status || "").toUpperCase();
-  if (s) return s;
+  if (s.indexOf("BLOCK") >= 0 || s.indexOf("DECLINE") >= 0 || s.indexOf("UNSUITABLE") >= 0) return "RED";
+  if (s.indexOf("REVIEW") >= 0 || s.indexOf("WARN") >= 0 || s.indexOf("PENDING") >= 0) return "AMBER";
+  if (s.indexOf("OK") >= 0 || s.indexOf("APPROVABLE") >= 0 || s.indexOf("PASS") >= 0) return "GREEN";
 
   return "UNKNOWN";
 }
 
 function decisionIntelPillClass(intel) {
-  if (!intel) return "pill-neutral";
-
-  // Preferred v2
-  if (intel.approvable === true) return "pill-ok";
-  var c = String(intel.classification || "").toUpperCase();
-  if (c === "TEMPORARY") return "pill-warn";
-  if (c === "STRUCTURAL") return "pill-bad";
-  if (c === "COMPLIANCE") return "pill-warn";
-
-  // Legacy fallback
-  var s = String(intel.status || "").toUpperCase();
-  if (s === "APPROVABLE") return "pill-ok";
-  if (s.indexOf("TEMP") >= 0) return "pill-warn";
-  if (s.indexOf("UNSUIT") >= 0) return "pill-bad";
-  if (s.indexOf("COMPLI") >= 0) return "pill-warn";
-
+  var label = decisionIntelLabel(intel);
+  if (label === "GREEN") return "pill-ok";
+  if (label === "AMBER") return "pill-warn";
+  if (label === "RED") return "pill-bad";
   return "pill-neutral";
 }
 
@@ -394,13 +463,13 @@ function decisionIntelPillClass(intel) {
     var marinas = unwrapArray(marinasPayload, "marinas");
 
     vesselsById = {};
-    vessels.forEach(function(v) { vesselsById[key(v.id)] = v; });
+    vessels.forEach(function(v) { vesselsById[String(Number(v.id))] = v; });
 
     mooringsById = {};
-    moorings.forEach(function(m) { mooringsById[key(m.id)] = m; });
+    moorings.forEach(function(m) { mooringsById[String(Number(m.id))] = m; });
 
     marinasById = {};
-    marinas.forEach(function(m) { marinasById[key(m.id)] = m; });
+    marinas.forEach(function(m) { marinasById[String(Number(m.id))] = m; });
 
     return {
       vesselsCount: vessels.length,
@@ -423,7 +492,7 @@ function decisionIntelPillClass(intel) {
   }
 
   async function loginOperatorAndStoreToken() {
-    const base = apiBase();
+    const base = apiBaseUrl();
     const email = (document.getElementById("loginEmail")?.value || "").trim();
     const password = (document.getElementById("loginPassword")?.value || "").trim();
     const statusEl = document.getElementById("loginStatus");
@@ -503,6 +572,48 @@ function decisionIntelPillClass(intel) {
     var results = Array.isArray(data) ? data : ((data && (data.results || data.bookings)) ? (data.results || data.bookings) : []);
     var count = (data && data.count !== undefined && data.count !== null) ? data.count : results.length;
 
+// PHASE17_SORT_APPLIED
+function _parseDate(v){
+  if(!v) return 0;
+  const t = Date.parse(String(v));
+  return isNaN(t) ? 0 : t;
+}
+function _statusRank(st){
+  st = String(st||"").toLowerCase();
+  if(st==="pending") return 0;
+  if(st==="approved") return 1;
+  if(st==="declined") return 2;
+  return 3;
+}
+function _getField(b, kind){
+  if(kind==="start") return b.startDate || b.start || b.fromDate || b.from || b.dateFrom || b.checkIn || b.arriveDate;
+  return b.createdAt || b.created || b.createdDate || b.submittedAt || b.requestedAt || b.updatedAt;
+}
+
+// read UI controls with LS fallback
+var sortBy = (qs("sortBy") && qs("sortBy").value) || (function(){ try { return localStorage.getItem("inboxSortBy") || "start"; } catch(e){ return "start"; } })();
+var sortDir = (qs("sortDir") && qs("sortDir").value) || (function(){ try { return localStorage.getItem("inboxSortDir") || "asc"; } catch(e){ return "asc"; } })();
+
+// Pending-first, then chosen date sort
+results = (results || []).slice().sort(function(a,b){
+  var ra=_statusRank(a.status), rb=_statusRank(b.status);
+  if(ra!==rb) return ra-rb;
+
+  var ta=_parseDate(_getField(a, sortBy));
+  var tb=_parseDate(_getField(b, sortBy));
+  if(ta!==tb) return (sortDir==="desc") ? (tb-ta) : (ta-tb);
+
+  var ia=Number(a.id||0), ib=Number(b.id||0);
+  return ia-ib;
+});
+
+// keep the original data object aligned (optional but safe)
+try {
+  if (data && data.results) data.results = results;
+  if (data && data.bookings) data.bookings = results;
+} catch(e){}
+
+
     if (!results.length) {
       wrap.innerHTML = "<div class='muted' style='margin-top:10px;'>No bookings found for the selected filters.</div>";
       return;
@@ -515,8 +626,9 @@ function decisionIntelPillClass(intel) {
       + "    <th>Booking</th>"
       + "    <th>Dates</th>"
       + "    <th>Vessel</th>"
+      + "    <th>Preference</th>"
       + "    <th>Mooring / Marina</th>"
-      + "    <th>Decision Intel</th>"
+      + "    <th>Decision Signal</th>"
       + "    <th>Status</th>"
       + "    <th class='right'>Action</th>"
       + "  </tr>"
@@ -529,20 +641,40 @@ function decisionIntelPillClass(intel) {
     for (var i = 0; i < results.length; i++) {
       var b = results[i];
 
-      var vessel = vesselsById[key(b.vesselId)];
-      var mooring = mooringsById[key(b.mooringId)];
-      var marina = marinasById[key(b.marinaId)];
+      var vessel = vesselsById[String(Number(b.vesselId))];
+      var mooring = mooringsById[String(Number(b.mooringId))];
+      var marina = marinasById[String(Number(b.marinaId))];
 
       var vesselName = pickVesselName(vessel) || ("VesselId: " + b.vesselId);
       var mooringName = pickMooringName(mooring) || ("MooringId: " + b.mooringId);
       var marinaName = pickMarinaName(marina) || ("MarinaId: " + b.marinaId);
 
-      var bookingCell = "<div><strong>#" + esc(b.id) + "</strong></div><div class='muted'>OwnerId: " + esc(b.ownerId) + "</div>";
+      // PHASE17_STATUS_PILLS_ACTION_GUARD
+      // Make inbox feel operational: color-coded statuses and pending-only actions.
+      // Keep view access for all statuses via the Booking # link; Action column is pending-only.
+      var st = String(b.status || "unknown").toLowerCase();
+
+      // Booking cell: link the booking number for ALL statuses (view access)
+      var bookingCell =
+        "<div><strong><a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "'>#" + esc(b.id) + "</a></strong></div>"
+        + "<div class='muted'>OwnerId: " + esc(b.ownerId) + "</div>";
+
       var datesCell = "<div>" + esc(b.startDate) + " \u2192 " + esc(b.endDate) + "</div>";
       var vesselCell = "<div>" + esc(vesselName) + "</div><div class='muted'>(id: " + esc(b.vesselId) + ")</div>";
       var mooringMarinaCell = "<div>" + esc(mooringName) + "</div><div class='muted'>" + esc(marinaName) + "</div>";
-      var statusCell = "<span class='pill'>" + esc(b.status || "unknown") + "</span>";
-      var actionCell = "<a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "'>Open Application Pack \u2192</a>";
+
+      // Status pill: pending neutral, approved green, declined red
+      var stClass = "pill-neutral";
+      if (st === "approved") stClass = "pill-ok";
+      else if (st === "declined") stClass = "pill-bad";
+      else if (st === "pending") stClass = "pill-neutral";
+
+      var statusCell = "<span class='pill " + esc(stClass) + "'>" + esc(st) + "</span>";
+
+      // Action column: pending-only (non-pending is visible but not actionable)
+      var actionCell = (st === "pending")
+        ? "<a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "'>Open Application Pack \u2192</a>"
+        : "<span class='muted'>—</span>";
 
       var intel = await fetchDecisionIntel(b.id);
       var intelText = decisionIntelLabel(intel);
@@ -573,16 +705,17 @@ else if (intel && intel.reasons && intel.reasons.length) {
 
       var tr = document.createElement("tr");
       tr.innerHTML = ""
-        + "<td>" + bookingCell + "</td>"
-        + "<td>" + datesCell + "</td>"
-        + "<td>" + vesselCell + "</td>"
-        + "<td>" + mooringMarinaCell + "</td>"
-        + "<td>"
-        +   "<span class='pill " + esc(pillClass) + "' title='" + esc(reasonText) + "'>" + esc(intelText) + "</span>"
-        +   "<div class='muted'>" + esc(reasonText) + "</div>"
-        + "</td>"
-        + "<td>" + statusCell + "</td>"
-        + "<td class='right'>" + actionCell + "</td>";
+  + "<td>" + bookingCell + "</td>"
+  + "<td>" + datesCell + "</td>"
+  + "<td>" + vesselCell + "</td>"
+  + "<td><span class='pill pill-neutral'>" + esc(prefLabel(b.servicePreference)) + "</span></td>"
+  + "<td>" + mooringMarinaCell + "</td>"
+  + "<td>"
+  +   "<span class='pill " + esc(pillClass) + "' title='" + esc(reasonText) + "'>" + esc(intelText) + "</span>"
+  +   "<div class='muted'>" + esc(reasonText) + "</div>"
+  + "</td>"
+  + "<td>" + statusCell + "</td>"
+  + "<td class='right'>" + actionCell + "</td>";
 
       tbody.appendChild(tr);
     }
@@ -627,7 +760,33 @@ else if (intel && intel.reasons && intel.reasons.length) {
     }
   }
 
-  // ---------- Wire UI ----------
+  
+// PHASE17_SORT_PERSISTENCE
+(function(){
+  function getLS(k, fallback){ try { return localStorage.getItem(k) || fallback; } catch(e){ return fallback; } }
+  function setLS(k, v){ try { if(v!==undefined && v!==null) localStorage.setItem(k, String(v)); } catch(e){} }
+
+  // Restore sort controls on load
+  try {
+    var sb = document.getElementById("sortBy");
+    var sd = document.getElementById("sortDir");
+    if (sb) sb.value = getLS("inboxSortBy","start");
+    if (sd) sd.value = getLS("inboxSortDir","asc");
+  } catch(e){}
+
+  // Hook saveInboxFilters without changing its JSON schema
+  if (typeof saveInboxFilters === "function") {
+    var _orig = saveInboxFilters;
+    saveInboxFilters = function(){
+      try { _orig(); } catch(e){}
+      var sb = document.getElementById("sortBy");
+      var sd = document.getElementById("sortDir");
+      setLS("inboxSortBy", sb ? sb.value : getLS("inboxSortBy","start"));
+      setLS("inboxSortDir", sd ? sd.value : getLS("inboxSortDir","asc"));
+    };
+  }
+})();
+// ---------- Wire UI ----------
   wireLoginButtons(loadAll);
 
   // Manual “Load Inbox” button
@@ -652,6 +811,21 @@ qs("status")?.addEventListener("change", () => { saveInboxFilters(); loadAll(); 
 qs("from")?.addEventListener("change", () => { saveInboxFilters(); loadAll(); });
 qs("to")?.addEventListener("change", () => { saveInboxFilters(); loadAll(); });
 
+qs("btnResetFilters")?.addEventListener("click", () => {
+  try {
+    if (qs("status")) qs("status").value = "pending";
+    if (qs("sortBy")) qs("sortBy").value = "start";
+    if (qs("sortDir")) qs("sortDir").value = "asc";
+    if (qs("from")) qs("from").value = "";
+    if (qs("to")) qs("to").value = "";
+    localStorage.removeItem("operatorInboxFilters");
+  } catch(e) {}
+  loadAll();
+});
+
+
+  qs("sortBy")?.addEventListener("change", () => { saveInboxFilters(); loadAll(); });
+  qs("sortDir")?.addEventListener("change", () => { saveInboxFilters(); loadAll(); });
 </script>
 
 <script>

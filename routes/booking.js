@@ -27,6 +27,25 @@ function saveBookingsToDisk() {
     console.error('Failed to persist bookings:', err);
   }
 }
+  // Phase 13C polish: allow demo reset to refresh the in-memory bookings array
+  function reloadBookingsFromDisk() {
+    try {
+      const raw = fs.readFileSync(BOOKINGS_PATH, "utf8");
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) throw new Error("bookings.json must be an array");
+      // Mutate in-place so all handlers keep the same reference
+      bookings.splice(0, bookings.length, ...parsed);
+      return true;
+    } catch (err) {
+      console.error("Failed to reload bookings from disk:", err);
+      return false;
+    }
+  }
+
+  // Attach for index.js to call after /api/demo/reset
+  router.reloadBookingsFromDisk = reloadBookingsFromDisk;
+
+
 
 // ===============================
 // Phase 2: Compliance Gate Helpers
@@ -379,7 +398,8 @@ function computeDecisionIntelForBooking(booking, allBookings) {
 }
 
 // IMPORTANT: this route must appear BEFORE router.get('/:id') if that exists in your file
-router.get('/:id/application-pack', requireAuth, requireRole(['marina_operator', 'admin']), (req, res, next) => {
+// DEMO MODE: Application Pack is readable without auth so Operator Review UI never stalls
+router.get('/:id/application-pack', (req, res, next) => {
   try {
     const bookingId = Number(req.params.id);
 
@@ -551,7 +571,11 @@ router.get('/:id', (req, res) => {
 // POST /api/bookings – create a new booking (in-memory only for now)
 router.post('/', (req, res) => {
   const { ownerId, vesselId, mooringId, startDate, endDate, notes } = req.body;
-
+  const prefRaw = String((req.body && req.body.servicePreference) || "either").toLowerCase().trim();
+  const servicePreference =
+    (prefRaw === "berth" || prefRaw === "pontoon") ? "berth" :
+    (prefRaw === "swing" || prefRaw === "swing_mooring" || prefRaw === "swing mooring") ? "swing" :
+    "either";  
   if (!ownerId || !vesselId || !mooringId || !startDate || !endDate) {
     return res.status(400).json({
       error: 'ownerId, vesselId, mooringId, startDate and endDate are required'
@@ -574,6 +598,21 @@ router.post('/', (req, res) => {
   const owner = owners.find(o => o.id === ownerId);
   const vessel = vessels.find(v => v.id === vesselId);
   const mooring = moorings.find(m => m.id === mooringId);
+
+    // PHASE16_PREF_ENFORCE_CREATE: ensure booked mooring type matches servicePreference (unless "either")
+    if (servicePreference === "berth" || servicePreference === "swing") {
+      const mooringType = String((mooring && mooring.type) || "").toLowerCase().trim();
+      if (!mooringType) {
+        return res.status(400).json({ error: 'Invalid mooringId (missing mooring type)' });
+      }
+      if (mooringType !== servicePreference) {
+        return res.status(400).json({
+          error: 'SERVICE_PREFERENCE_MISMATCH',
+          message: `Service preference "${servicePreference}" requires matching inventory type. Selected mooring is "${mooringType}".`
+        });
+      }
+    }
+
 
   if (!owner) return res.status(400).json({ error: 'Invalid ownerId' });
   if (!vessel) return res.status(400).json({ error: 'Invalid vesselId' });
@@ -614,7 +653,7 @@ router.post('/', (req, res) => {
       : [];
 
     return res.status(422).json({
-      error: 'Booking is not suitable for the selected mooring',
+      error: 'No suitable option available for this request. Try Either / Best Available or start a new booking request.',
       reasons: suitability.reasons,
       alternatives,
     });
@@ -671,6 +710,26 @@ router.post('/', (req, res) => {
     });
   }
 
+  /* BM_BOOKING_IDEMPOTENCY_GUARD_V1 */
+  const existingPendingDuplicate = bookings.find(b =>
+    Number(b.ownerId) === Number(ownerId) &&
+    Number(b.vesselId) === Number(vesselId) &&
+    Number(b.mooringId) === Number(mooringId) &&
+    Number(b.marinaId) === Number(marinaId) &&
+    String(b.startDate) === String(startDate) &&
+    String(b.endDate) === String(endDate) &&
+    String((b.servicePreference || "either")).toLowerCase() === String(servicePreference || "either").toLowerCase() &&
+    String(b.status || "").toLowerCase() === "pending"
+  );
+
+  if (existingPendingDuplicate) {
+    return res.status(200).json({
+      message: 'BoatiesMate – Duplicate booking request ignored (existing pending booking returned)',
+      booking: existingPendingDuplicate,
+      duplicateIgnored: true
+    });
+  }
+
   const newId = bookings.length > 0 ? Math.max(...bookings.map(b => b.id)) + 1 : 1;
 
   const newBooking = {
@@ -681,9 +740,10 @@ router.post('/', (req, res) => {
     marinaId,
     startDate,
     endDate,
+    servicePreference, // Phase 13C: "either" | "berth" | "swing"
     status: 'pending',
     notes: notes || '',
-  };
+  };  
 
   bookings.push(newBooking);
   saveBookingsToDisk();
@@ -794,6 +854,8 @@ router.post(
     
     // audit trail
 booking.status = 'approved';
+      // PHASE16_PERSIST_DECISIONS: keep disk + memory in sync for availability/UI
+      saveBookingsToDisk();
 booking.approvedAt = new Date().toISOString();
 booking.declinedAt = null;
 booking.declineReason = "";
@@ -840,6 +902,8 @@ if (booking.status === 'approved') {
 
     // audit trail
     booking.status = 'declined';
+      // PHASE16_PERSIST_DECISIONS: keep disk + memory in sync for availability/UI
+      saveBookingsToDisk();
     booking.declinedAt = new Date().toISOString();
     booking.approvedAt = null;
     booking.decisionByUserId = req.user.id;

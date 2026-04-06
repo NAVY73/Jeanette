@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BoatiesMate — Vessel Setup</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Vessel Setup</h1>
+      <p class="muted">Step 2 of 3 — Add your vessel.</p>
+
+      <div class="notice" style="margin-bottom:12px; display:none;" hidden aria-hidden="true">
+        Owner ID: <strong id="ownerIdLabel">—</strong>
+      </div>
+
+      <div class="field" style="display:none;" hidden aria-hidden="true">
+        <label for="apiBase">API Base URL (optional)</label>
+        <input id="apiBase" type="text" placeholder="" />
+        <div class="hint">Uses the same setting saved on the registration screen.</div>
+      </div>
+
+      <hr />
+
+      <div class="field">
+        <label for="name">Vessel name</label>
+        <input id="name" type="text" placeholder="e.g. Harbour Breeze" />
+      </div>
+
+      <div class="field">
+        <label for="type">Vessel type</label>
+        <select id="type">
+          <option value="trailer">Trailer boat</option>
+          <option value="launch">Launch</option>
+          <option value="yacht">Yacht</option>
+          <option value="multihull">Multihull</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="registration">Registration (optional)</label>
+        <input id="registration" type="text" placeholder="e.g. NZ-ABC-123" />
+      </div>
+
+      <div class="field">
+        <label for="lengthM">Length (m)</label>
+        <input id="lengthM" type="number" step="0.1" placeholder="e.g. 7.2" />
+      </div>
+
+      <div class="field">
+        <label for="beamM">Beam (m) (optional)</label>
+        <input id="beamM" type="number" step="0.1" placeholder="e.g. 2.5" />
+      </div>
+
+      <div class="field">
+        <label for="draftM">Draft (m) (optional)</label>
+        <input id="draftM" type="number" step="0.1" placeholder="e.g. 0.6" />
+      </div>
+
+      <div class="field">
+        <label style="display:flex; gap:10px; align-items:center;">
+          <input id="hasShorePower" type="checkbox" />
+          <span>Uses shore power connection (requires Shore Power Connection Inspection)</span>
+        </label>
+        <div class="hint">Tick this if the vessel will plug into marina shore power.</div>
+      </div>
+
+      <div id="msg" class="notice" style="display:none;"></div>
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button id="saveBtn" class="btn-primary" type="button">Save Vessel & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="vessel-setup.js"></script>
+<div class="card" style="margin-top:12px;">
+  <h3>Onboarding Navigation</h3>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn-secondary" href="profile.html">← Back: Owner Profile</a>
+    <a class="btn-primary" href="compliance-upload.html">Next: Compliance</a>
+  </div>
+</div>
+
+</body>
+</html>

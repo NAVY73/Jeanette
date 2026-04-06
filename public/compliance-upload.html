@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BoatiesMate — Compliance Upload</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Compliance Upload</h1>
+      <p class="muted">Step 3 of 3 — Upload compliance proof.</p>
+
+      <div class="notice" style="margin-bottom:12px;">
+        Owner ID: <strong id="ownerIdLabel">—</strong> &nbsp;•&nbsp;
+        Vessel ID: <strong id="vesselIdLabel">—</strong>
+      </div>
+
+      <div class="field" style="display:none;" hidden aria-hidden="true">
+        <label for="apiBase">API Base URL (optional)</label>
+        <input id="apiBase" type="text" placeholder="" />
+      </div>
+
+      <div class="field" style="display:none;" hidden aria-hidden="true">
+        <label for="marinaId">Marina ID (eligibility check)</label>
+        <input id="marinaId" type="number" step="1" value="1" />
+      </div>
+
+      <hr />
+
+      <h3 style="margin-top:0;">Upload Proof</h3>
+      <p class="muted" style="margin-top:6px;">
+        Required: Insurance, EWoF, Biofouling Inspection. Optional: Registration.
+      </p>
+
+      <div class="field">
+        <label for="issueDate">Issue date</label>
+        <input id="issueDate" type="date" />
+      </div>
+
+      <div class="field">
+        <label for="expiryDate">Expiry date</label>
+        <input id="expiryDate" type="date" />
+      </div>
+
+      <div style="display:flex; gap:10px; margin-bottom:14px;">
+        <button id="fillDatesBtn" class="btn-secondary" type="button">Auto-fill dates (today + 12 months)</button>
+        <button id="checkBtn" class="btn-secondary" type="button">Check Eligibility</button>
+      </div>
+
+      <div class="card" style="padding:12px; margin-bottom:10px;">
+        <h3 style="margin:0 0 8px 0;">Insurance (Required)</h3>
+        <input id="fileInsurance" type="file" />
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button id="uploadInsuranceBtn" class="btn-primary" type="button">Upload Insurance Proof</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px; margin-bottom:10px;">
+        <h3 style="margin:0 0 8px 0;">EWoF (Required)</h3>
+        <input id="fileEwof" type="file" />
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button id="uploadEwofBtn" class="btn-primary" type="button">Upload EWoF Proof</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px; margin-bottom:10px;">
+        <h3 style="margin:0 0 8px 0;">Biofouling Inspection (Required)</h3>
+        <input id="fileBio" type="file" />
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button id="uploadBioBtn" class="btn-primary" type="button">Upload Biofouling Proof</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px; margin-bottom:10px;">
+        <h3 style="margin:0 0 8px 0;">Shore Power Connection Inspection (Required when applicable)</h3>
+        <input id="fileShore" type="file" />
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button id="uploadShoreBtn" class="btn-primary" type="button">Upload Shore Power Proof</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px; margin-bottom:10px;">
+        <h3 style="margin:0 0 8px 0;">Registration (Optional)</h3>
+        <input id="fileReg" type="file" />
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <button id="uploadRegBtn" class="btn-secondary" type="button">Upload Registration Proof</button>
+        </div>
+      </div>
+
+      <div id="eligBox" class="notice" style="display:none; margin-top:14px;"></div>
+      <div id="msg" class="notice" style="display:none; margin-top:10px;"></div>
+
+      <hr />
+
+      <div style="display:flex; gap:16px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;">
+        <div style="flex:1 1 420px; min-width:280px;">
+          <h3>Documents (this vessel)</h3>
+          <div id="docsEmpty" class="muted">No documents loaded yet.</div>
+
+          <div id="docsTableWrap" style="display:none; overflow:auto;">
+            <table class="table" style="width:100%; min-width:760px;">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Type</th>
+                  <th>Issue</th>
+                  <th>Expiry</th>
+                  <th>File</th>
+                  <th>Issuer</th>
+                  <th>Policy #</th>
+                  <th>Coverage NZD</th>
+                </tr>
+              </thead>
+              <tbody id="docsTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin:0; padding:12px; flex:0 1 260px; min-width:220px;">
+          <h3 style="margin-top:0;">Onboarding Navigation</h3>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="btn-secondary" href="vessel-setup.html">← Back: Vessel Setup</a>
+            <a class="btn-secondary" href="profile.html">Owner Profile</a>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <a id="proceedBtn" class="btn-primary" href="boatie-demo.html" style="pointer-events:none; opacity:0.6;">
+          Proceed to Booking
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="compliance-upload.js"></script>
+
+</body>
+</html>

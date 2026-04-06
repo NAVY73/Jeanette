@@ -29,13 +29,10 @@
   </style>
 </head>
 <body>
-  <div style="margin: 12px 0 14px;">
-    <a class="btn-secondary" href="/">← Back to Home</a>
-  </div>
   <div class="demo-badge">BoatiesMate Prototype — Demo Mode<small>Phase 11</small></div>
   <div class="muted" style="margin-bottom:12px;">
-    <a class="btn-secondary" href="boatie-demo.html">← Back to Boatie Demo</a>
-  </div>
+    <a class="btn-secondary" href="boatie-demo.html">← Back to Boatie Booking</a>
+</div>
   <header class="brand-header">
     <div class="brand-header__inner">
       <img
@@ -46,22 +43,16 @@
       <span class="role-pill role-pill--boatie">Boatie</span>
     </div>
   </header>
-
-  <div class="topnav">
-    <a href="/booking-form.html">Booking Form</a>
-    <a href="/profile.html"><strong>Profile & Compliance</strong></a>
-  </div>
-
-  <h1>Boatie Profile, Vessel Details & Compliance</h1>
+<h1>Boatie Profile, Vessel Details & Compliance</h1>
   <p class="muted">
     Save these once. The booking form can then reuse them. Compliance must be valid before a booking can be created.
   </p>
 
-  <div class="card">
+  <div class="card" hidden aria-hidden="true" style="display:none;">
     <h2>API Base URL</h2>
     <p class="muted small">If you normally use <code>http://localhost:3000</code>, leave this as-is.</p>
-    <input id="apiBase" type="text" value="http://localhost:3000" />
-    <button id="btnReloadAll" class="btn-secondary">Reload All</button>
+    <input id="apiBase" type="text" value="http://127.0.0.1:3000" />
+    <button id="btnReloadAll" class="btn-secondary" type="button">Reload All</button>
     <div id="status" class="status ok" style="display:none;"></div>
   </div>
 
@@ -204,7 +195,8 @@
           <option value="EWoF">EWoF / WoEF</option>
           <option value="INSURANCE">Insurance (Public Liability)</option>
           <option value="SHORE_POWER_LEAD_TEST">Shore Power Lead Test Tag</option>
-        </select>
+                    <option value="BIOFOULING_INSPECTION">Biofouling Inspection</option>
+</select>
       </div>
       <div>
         <label>Issuer (optional)</label>
@@ -264,5 +256,11 @@
   </div>
 
   <script src="/profile.js"></script>
+<div class="card" style="margin-top:12px;">
+  <h3>Next Step</h3>
+  <p>Continue to vessel setup.</p>
+  <a class="btn-primary" href="vessel-setup.html">Next: Vessel Setup</a>
+</div>
+
 </body>
 </html>

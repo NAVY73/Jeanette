@@ -39,12 +39,56 @@
     /* Banner */
     #banner { display:none; border: 1px solid #ddd; border-left-width: 6px; border-radius: 10px; padding: 10px 12px; margin: 12px 0; }
     #bannerTitle { font-weight: bold; margin-bottom: 4px; }
-  </style>
+  
+/* PHASE_UI_POLISH_RAWJSON */
+#rawJson{
+  background:#fff;
+  color:#111;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:12px;
+  margin:0;
+  font-size:12px;
+  line-height:1.35;
+  overflow:auto;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+
+/* PHASE_UI_APP_SUMMARY */
+.app-summary{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:12px;
+  margin:0 0 10px 0;
+}
+.app-summary .row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:6px 0;
+}
+.app-summary .pill{
+  display:inline-block;
+  border:1px solid #e5e7eb;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  line-height:1.2;
+  background:#fafafa;
+}
+.app-summary .label{
+  font-weight:600;
+  margin-right:6px;
+}
+
+</style>
 
 </head>
 <body>
   <div style="margin: 12px 0 14px;">
-    <a class="btn-secondary" href="/">← Back to Home</a>
   </div>
   <div class="demo-badge">BoatiesMate Prototype — Demo Mode<small>Phase 11</small></div>
   <header class="brand-header">
@@ -60,13 +104,11 @@
   
   <div class="muted"><a class="btn-secondary" id="backToInboxLink" href="operator-inbox.html">← Back to Operator Inbox</a></div>
   <h2>Operator Review – Application Pack</h2>
-  <div class="muted">
-    Operator-friendly review of a booking’s Application Pack (owner, vessel, documents, compliance summary, and Decision Intelligence).
-  </div>
+
 
   <div class="card" id="docsCard">
     <h3 style="margin-top:0;">Compliance Documents</h3>
-    <div class="muted">Read-only. Click “View” to open the document (demo viewer until real PDFs are wired).</div>
+
   
     <div id="docsEmpty" class="muted" style="margin-top:10px;">No documents loaded.</div>
   
@@ -89,10 +131,10 @@
   </div>
 
   <div class="card">
-    <div class="row">
+    <div class="row" style="display:none;" hidden aria-hidden="true">
       <div class="k">API Base URL</div>
       <div>
-        <input id="apiBase" placeholder="Leave blank for hosted demo (uses this site)" />
+        <input id="apiBase" placeholder="" />
 ...
 Tip: leave blank for hosted demos (defaults to <span class="pill">this site</span>).
         </div>
@@ -103,7 +145,6 @@ Tip: leave blank for hosted demos (defaults to <span class="pill">this site</spa
       <div class="k">Booking ID</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <input id="bookingId" placeholder="e.g. 4" style="max-width:220px;" />
-        <button id="loadBtn" type="button" class="btn-accent">Load Application Pack</button>
       </div>
     </div>
 
@@ -162,7 +203,8 @@ Tip: leave blank for hosted demos (defaults to <span class="pill">this site</spa
     </div>
 
     <div class="card">
-      <div class="k" style="margin-bottom:8px;">Raw JSON</div>
+      <div class="k" style="margin-bottom:8px;">Application Details</div>
+      <div id="appSummary" class="app-summary"></div>
       <pre id="rawJson">{}</pre>
     </div>
   </div>

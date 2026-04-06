@@ -96,6 +96,18 @@
       }
 
       els.resetStatus.textContent = data && data.message ? data.message : "Reset complete.";
+
+      // Also clear boatie/browser-side demo state so the next walkthrough starts clean
+      try { sessionStorage.removeItem("bmSubmitInFlight"); } catch (e) {}
+      try { sessionStorage.removeItem("bmSubmittedBookingId"); } catch (e) {}
+      try { sessionStorage.removeItem("bmBoatieDraft"); } catch (e) {}
+      try { localStorage.removeItem("bmDemoLastSubmittedBookingId"); } catch (e) {}
+      try { localStorage.removeItem("bmDemoIdentity"); } catch (e) {}
+      try { localStorage.removeItem("bmStableIdentity"); } catch (e) {}
+      try { window.__bmSubmitInFlight = false; } catch (e) {}
+      try { window.__bmSubmitDone = false; } catch (e) {}
+      try { window.__bmSubmittedBookingId = ""; } catch (e) {}
+
       setTimeout(() => nav("/operator-inbox.html"), 600);
     } catch (err) {
       els.resetStatus.textContent = "Reset failed (server not reachable).";

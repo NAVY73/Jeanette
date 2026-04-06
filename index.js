@@ -103,17 +103,63 @@ app.post("/api/demo/reset", (req, res) => {
 
     if (!fs.existsSync(baseline)) {
       return res.status(400).json({ message: "No baseline found. Create it first: data/demo-baseline/bookings.json" });
+
+
+
     }
 
     const raw = fs.readFileSync(baseline, "utf8");
     JSON.parse(raw); // validity check
     fs.writeFileSync(live, raw, "utf8");
 
+    /* BM_RELOAD_BOOKINGS_AFTER_CLEARRESET_V1: keep in-memory bookings aligned with disk after reset */
+    try {
+      if (bookingsRouter && typeof bookingsRouter.reloadBookingsFromDisk === "function") {
+        bookingsRouter.reloadBookingsFromDisk();
+      }
+    } catch (reloadErr) {
+      console.error("Failed to reload bookings after demo reset:", reloadErr);
+    }
+
     return res.json({ message: "Demo reset complete (bookings restored from baseline)." });
   } catch (e) {
     return res.status(500).json({ message: "Reset failed.", error: String(e && e.message ? e.message : e) });
   }
 });
+
+
+/* BM_CLEAR_BOOKINGS_TOPLEVEL_V2 */
+/**
+ * POST /api/demo/clear-bookings
+ * Demo-only helper: wipe all live bookings so Operator Inbox is clean.
+ * Does not affect baseline until /api/demo/baseline is called.
+ */
+app.post("/api/demo/clear-bookings", (req, res) => {
+  if (!requireDemoAdminKey(req, res)) return;
+  try {
+    const live = path.join(__dirname, "data", "bookings.json");
+
+    if (!fs.existsSync(live)) {
+      return res.status(404).json({ message: "Live bookings file not found.", live });
+    }
+
+    fs.writeFileSync(live, JSON.stringify([], null, 2) + "\n", "utf8");
+
+    /* BM_RELOAD_BOOKINGS_AFTER_CLEARRESET_V1: keep in-memory bookings aligned with disk after clear */
+    try {
+      if (bookingsRouter && typeof bookingsRouter.reloadBookingsFromDisk === "function") {
+        bookingsRouter.reloadBookingsFromDisk();
+      }
+    } catch (reloadErr) {
+      console.error("Failed to reload bookings after clear-bookings:", reloadErr);
+    }
+
+    return res.json({ message: "Demo bookings cleared.", live });
+  } catch (e) {
+    return res.status(500).json({ message: "Failed to clear demo bookings.", error: String(e && e.message || e) });
+  }
+});
+/* /BM_CLEAR_BOOKINGS_TOPLEVEL_V2 */
 
 app.post("/api/demo/baseline", (req, res) => {
     if (!requireDemoAdminKey(req, res)) return;
