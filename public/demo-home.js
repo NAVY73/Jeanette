@@ -81,9 +81,20 @@
     els.resetStatus.textContent = "Resetting…";
 
     try {
-      const res = await fetch("/api/demo/reset", {
+      let demoAdminKey = "";
+      try { demoAdminKey = localStorage.getItem("bmDemoAdminKey") || ""; } catch (e) {}
+      if (!demoAdminKey) {
+        demoAdminKey = window.prompt("Enter demo admin key");
+        if (!demoAdminKey) {
+          els.resetStatus.textContent = "Reset cancelled (no demo admin key entered).";
+          return;
+        }
+        try { localStorage.setItem("bmDemoAdminKey", demoAd        try { localStorage.setItem("bm const res = await fetch("/api/demo/reset", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Demo-Admin-Key": demoAdminKey
+        },
         body: JSON.stringify({ reason: "phase12-demo-home-reset" }),
       });
 

@@ -201,9 +201,23 @@
         btn.textContent = "Resetting…";
       }
 
+      let demoAdminKey = "";
+      try { demoAdminKey = localStorage.getItem("bmDemoAdminKey") || ""; } catch (e) {}
+      if (!demoAdminKey) {
+        demoAdminKey = window.prompt("Enter demo admin key");
+        if (!demoAdminKey) {
+          alert("Reset cancelled (no demo admin key entered).");
+          return;
+        }
+        try { localStorage.setItem("bmDemoAdminKey", demoAdminKey); } catch (e) {}
+      }
+
       const res = await fetch("/api/demo/reset", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Demo-Admin-Key": demoAdminKey
+        },
         body: JSON.stringify({ reason: "operator-inbox-header-reset" })
       });
 
