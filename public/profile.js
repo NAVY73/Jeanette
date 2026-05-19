@@ -37,8 +37,6 @@ function $(id) {
   function formatMeta(obj) {
     if (!obj) return '';
     const parts = [];
-    if (obj.createdAt) parts.push(`Created: ${obj.createdAt}`);
-    if (obj.updatedAt) parts.push(`Updated: ${obj.updatedAt}`);
     return parts.join(' | ');
   }
   

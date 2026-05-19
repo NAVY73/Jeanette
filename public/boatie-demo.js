@@ -305,7 +305,7 @@ try{
 
   // Make the UI truthful (include numeric IDs)
   const it = document.getElementById("identityText");
-  if (it) it.textContent = "Demo identity preloaded (Owner " + ownerId + " + Vessel " + vesselId + ").";
+  if (it) it.textContent = "Identity preloaded.";
 }catch(e){}
 /* === /BM_PATCH11_PERSIST_DEMO_IDENTITY === */
 

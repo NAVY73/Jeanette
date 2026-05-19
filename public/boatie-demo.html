@@ -136,13 +136,13 @@ button[type="submit"], .btn-primary { font-weight: 700; padding: 12px 16px; bord
 
   <div class="card">
     <label>Marina</label>
-    <select id="marinaId" style="display:block !important; visibility:visible !important; opacity:1 !important; min-height:44px !important; height:auto !important; width:100% !important; border:2px solid #ff00ff !important; background:#fff !important; color:#000 !important;" data-phase="PHASE_INLINE_MARINA_VISIBLE"></select>
+    <select id="marinaId" style="display:block !important; visibility:visible !important; opacity:1 !important; min-height:44px !important; height:auto !important; width:100% !important; border:1px solid #cfd8e3 !important; background:#fff !important; color:#000 !important;" data-phase="PHASE_INLINE_MARINA_VISIBLE"></select>
 
     <label>Mooring / Berth</label>
     <select id="mooringId"></select>
     <div id="mooringDiag" class="muted" style="margin-top:6px; font-size:0.95rem;">Mooring options: (waiting for marina)</div>
 
-<div id="marinaDiag" class="muted" data-phase="PHASE_MARINA_OPTIONS_DIAG_V1" style="margin-top:6px; font-size:0.95rem; border:1px dashed #ff00ff; padding:6px 8px;">Marina options: (checking...)</div>
+
 
 <div class="row">
       <div>
@@ -199,7 +199,7 @@ button[type="submit"], .btn-primary { font-weight: 700; padding: 12px 16px; bord
   <div class="card" hidden>
 <div id="handoff" class="card" style="display:none; margin-top:12px;" hidden>
   <h3 style="margin:0 0 6px 0;">Handoff</h3>
-  <div class="muted">Demo helper panel (Phase 11 hardening). Visible only when the page wants to guide the next step.</div>
+  <div class="muted"></div>
 </div>
 
 
@@ -208,14 +208,14 @@ button[type="submit"], .btn-primary { font-weight: 700; padding: 12px 16px; bord
     <div id="statusLine" class="status">Not submitted</div>
     <div id="decisionLine" class="muted"></div>
     <div id="debugBlock" style="display:none;">
-      <div class="muted">Debug</div>
+      
       <pre id="debugPre"></pre>
     </div>
   </div>
 
   <div id="emailCard" class="card" style="display:none; margin-top:12px;">
     <div><strong>Email notification (simulated)</strong></div>
-    <div class="muted">This is a demo preview. No email is actually sent yet.</div>
+    <div class="muted"></div>
     <div style="margin-top:10px;">
       <div class="muted"><strong>To:</strong> <span id="emailTo"></span></div>
       <div class="muted"><strong>Subject:</strong> <span id="emailSubject"></span></div>
