@@ -11,7 +11,11 @@ function storeOwnerId(id){ if(id) localStorage.setItem(PROFILE_OWNER_ID_KEY, Str
 function storeVesselId(id){ if(id) localStorage.setItem(PROFILE_VESSEL_ID_KEY, String(id)); }
 
 function apiBase() {
-    return ($('apiBase').value || '').replace(/\/$/, '');
+    const raw = ($('apiBase') && $('apiBase').value ? $('apiBase').value : '').replace(/\/$/, '');
+    if (raw.includes('127.0.0.1') && window.location.hostname !== '127.0.0.1' && window.location.hostname !== 'localhost') {
+      return window.location.origin;
+    }
+    return raw || window.location.origin;
   }
   
   function showStatus(kind, msg) {
