@@ -595,9 +595,18 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'endDate cannot be before startDate' });
   }
 
-  const owner = owners.find(o => o.id === ownerId);
-  const vessel = vessels.find(v => v.id === vesselId);
-  const mooring = moorings.find(m => m.id === mooringId);
+  // BM_LIVE_IDENTITY_VALIDATION_V1:
+  // Owners/vessels can be created after server start, so read current JSON at booking time.
+  const liveOwners = readJson('owners.json', owners);
+  const liveVessels = readJson('vessels.json', vessels);
+
+  const owner = (Array.isArray(liveOwners) ? liveOwners : owners)
+    .find(o => Number(o.id) === Number(ownerId));
+
+  const vessel = (Array.isArray(liveVessels) ? liveVessels : vessels)
+    .find(v => Number(v.id) === Number(vesselId));
+
+  const mooring = moorings.find(m => Number(m.id) === Number(mooringId));
 
     // PHASE16_PREF_ENFORCE_CREATE: ensure booked mooring type matches servicePreference (unless "either")
     if (servicePreference === "berth" || servicePreference === "swing") {

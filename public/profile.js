@@ -2,7 +2,15 @@ function $(id) {
     return document.getElementById(id);
   }
   
-  function apiBase() {
+  const PROFILE_OWNER_ID_KEY = "bmOwnerId";
+const PROFILE_VESSEL_ID_KEY = "bmVesselId";
+
+function getStoredOwnerId(){ return Number(localStorage.getItem(PROFILE_OWNER_ID_KEY) || 0) || null; }
+function getStoredVesselId(){ return Number(localStorage.getItem(PROFILE_VESSEL_ID_KEY) || 0) || null; }
+function storeOwnerId(id){ if(id) localStorage.setItem(PROFILE_OWNER_ID_KEY, String(id)); }
+function storeVesselId(id){ if(id) localStorage.setItem(PROFILE_VESSEL_ID_KEY, String(id)); }
+
+function apiBase() {
     return ($('apiBase').value || '').replace(/\/$/, '');
   }
   
@@ -51,6 +59,12 @@ function $(id) {
    * Returns ISO YYYY-MM-DD or '' (empty) if blank.
    * Throws Error if invalid.
    */
+  function formatNzDate(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || "";
+    const parts = iso.split("-");
+    return parts[2] + "-" + parts[1] + "-" + parts[0];
+  }
+
   function toIsoDate(input, labelForErrors) {
     const raw = (input || '').trim();
     if (!raw) return '';
@@ -123,8 +137,8 @@ function $(id) {
       tr.innerHTML = `
         <td>${d.id}</td>
         <td>${d.type}</td>
-        <td>${d.issueDate}</td>
-        <td>${d.expiryDate}</td>
+        <td>${formatNzDate(d.issueDate)}</td>
+        <td>${formatNzDate(d.expiryDate)}</td>
         <td>${cov}</td>
         <td><button data-del="${d.id}">Delete</button></td>
       `;
@@ -155,12 +169,14 @@ function $(id) {
     $('owner_postcode').value = owner.postcode || '';
     $('owner_emergencyName').value = owner.emergencyContactName || '';
     $('owner_emergencyPhone').value = owner.emergencyContactPhone || '';
+    storeOwnerId(owner.id);
     $('ownerMeta').textContent = formatMeta(owner);
   }
   
   async function saveOwner() {
     const url = `${apiBase()}/api/owner`;
     const payload = {
+      id: getStoredOwnerId(),
       fullName: $('owner_fullName').value,
       email: $('owner_email').value,
       phone: $('owner_phone').value,
@@ -198,6 +214,7 @@ function $(id) {
     $('vessel_draft').value = (v.draftM ?? '') === null ? '' : (v.draftM ?? '');
     $('vessel_shorePower').checked = Boolean(v.hasShorePower);
     $('vessel_notes').value = v.notes || '';
+    storeVesselId(v.id);
     $('vesselMeta').textContent = formatMeta(v);
   }
   
@@ -205,6 +222,8 @@ function $(id) {
     const url = `${apiBase()}/api/vessel`;
   
     const payload = {
+      id: getStoredVesselId(),
+      ownerId: getStoredOwnerId(),
       name: $('vessel_name').value,
       type: $('vessel_type').value,
       make: $('vessel_make').value,
@@ -247,6 +266,7 @@ function $(id) {
     if (expiryDateIso < issueDateIso) throw new Error('Expiry Date cannot be before Issue Date.');
   
     const payload = {
+      vesselId: getStoredVesselId(),
       type,
       issuer,
       issueDate: issueDateIso,

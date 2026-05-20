@@ -8,7 +8,8 @@
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
     "maxLengthMetres": 12,
-    "maxDraftMetres": 2.5
+    "maxDraftMetres": 2.5,
+    "maxBeamMetres": 4
   },
   {
     "id": 2,
@@ -19,7 +20,8 @@
     "isMarinaOwned": false,
     "requiresMarinaNotification": true,
     "maxLengthMetres": 11,
-    "maxDraftMetres": 2.2
+    "maxDraftMetres": 2.2,
+    "maxBeamMetres": 4
   },
   {
     "id": 3,
@@ -29,8 +31,8 @@
     "ownerId": null,
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
-    "maxLengthMetres": 14,
-    "maxDraftMetres": 2
+    "maxLengthMetres": 45,
+    "maxDraftMetres": 4
   },
   {
     "id": 4,
@@ -56,7 +58,7 @@
   },
   {
     "id": 6,
-    "name": "Gulf Harbour Swing 103",
+    "name": "Westhaven Swing 103",
     "type": "swing",
     "marinaId": 3,
     "ownerId": null,
@@ -74,6 +76,7 @@
     "isMarinaOwned": true,
     "requiresMarinaNotification": false,
     "maxLengthMetres": 12,
-    "maxDraftMetres": 2.5
+    "maxDraftMetres": 2.5,
+    "maxBeamMetres": 4
   }
 ]

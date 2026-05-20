@@ -1,19 +1,46 @@
 [
-    {
-      "marinaId": 1,
-      "requiredDocuments": [
-        { "type": "EWoF", "required": true, "expiryGraceDays": 0, "expiringSoonDays": 30 },
-        { "type": "INSURANCE", "required": true, "minCoverageNZD": 5000000, "expiryGraceDays": 0, "expiringSoonDays": 30 },
-        { "type": "SHORE_POWER_LEAD_TEST", "required": true, "appliesWhen": { "hasShorePower": true }, "expiryGraceDays": 0, "expiringSoonDays": 30 }
-      ]
-    },
-    {
-      "marinaId": 2,
-      "requiredDocuments": [
-        { "type": "EWoF", "required": true, "expiryGraceDays": 0, "expiringSoonDays": 30 },
-        { "type": "INSURANCE", "required": true, "minCoverageNZD": 5000000, "expiryGraceDays": 0, "expiringSoonDays": 30 },
-        { "type": "SHORE_POWER_LEAD_TEST", "required": true, "appliesWhen": { "hasShorePower": true }, "expiryGraceDays": 0, "expiringSoonDays": 30 }
-      ]
-    }
-  ]
-  
+  {
+    "marinaId": 2,
+    "requiredDocuments": [
+      {
+        "type": "EWoF",
+        "required": true,
+        "expiryGraceDays": 0,
+        "expiringSoonDays": 30
+      },
+      {
+        "type": "INSURANCE",
+        "required": true,
+        "minCoverageNZD": 5000000,
+        "expiryGraceDays": 0,
+        "expiringSoonDays": 30
+      },
+      {
+        "type": "SHORE_POWER_LEAD_TEST",
+        "required": true,
+        "appliesWhen": {
+          "hasShorePower": true
+        },
+        "expiryGraceDays": 0,
+        "expiringSoonDays": 30
+      },
+      {
+        "type": "BIOFOULING_INSPECTION",
+        "required": true,
+        "expiryGraceDays": 0,
+        "expiringSoonDays": 30
+      }
+    ]
+  },
+  {
+    "marinaId": 3,
+    "requiredDocuments": [
+      {
+        "type": "BIOFOULING_INSPECTION",
+        "required": true,
+        "expiryGraceDays": 0,
+        "expiringSoonDays": 30
+      }
+    ]
+  }
+]

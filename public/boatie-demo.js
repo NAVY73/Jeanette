@@ -1,3 +1,15 @@
+
+function bmProfileIdentity(){
+  try{
+    const ownerId = Number(localStorage.getItem("bmOwnerId") || 0) || null;
+    const vesselId = Number(localStorage.getItem("bmVesselId") || 0) || null;
+    if(ownerId && vesselId){
+      return { ownerId, vesselId, src: "profileStorage" };
+    }
+  }catch(e){}
+  return null;
+}
+
 /* BoatiesMate — boatie-demo.js (CLEAN REBUILD V1)
    Goal: deterministic marinas population + clear on-page diagnostics.
 */
@@ -292,9 +304,9 @@ const servicePreference = getVal("servicePreference");
 if (!tcAccept){ setMsg("Please accept Terms & Conditions."); return; }
 
     // Demo defaults (safe). If your HTML contains owner/vessel ids, they will override.
-    const ownerId = Number(getVal("ownerId","demoOwnerId")) || 1;
+    const ownerId = Number(getVal("ownerId","demoOwnerId")) || (bmProfileIdentity() && bmProfileIdentity().ownerId) || null;
     
-const vesselId = Number(getVal("vesselId","demoVesselId")) || 1;
+const vesselId = Number(getVal("vesselId","demoVesselId")) || (bmProfileIdentity() && bmProfileIdentity().vesselId) || null;
 
 /* === BM_PATCH11_PERSIST_DEMO_IDENTITY === */
 try{
@@ -1755,7 +1767,7 @@ async function submitBooking(){
   if (!ident) ident = parseLS("demoIdentity");
 
   // Final demo fallback (only if absolutely nothing else available)
-  if (!ident) ident = { ownerId: 1, vesselId: 1, src: "FALLBACK(1,1)" };
+  if (!ident) ident = bmProfileIdentity();
 
   // Persist back to window + storage so subsequent submits are stable
   try{
@@ -1861,18 +1873,20 @@ async function submitBooking(){
     return null;
   }
 
-  let ident = null;
-  try{
-    if (window.demoIdentity && num(window.demoIdentity.ownerId) && num(window.demoIdentity.vesselId)){
-      ident = { ownerId: num(window.demoIdentity.ownerId), vesselId: num(window.demoIdentity.vesselId) };
-    }
-  }catch(e){}
+  let ident = bmProfileIdentity();
+
+  if (!ident) {
+    try{
+      if (window.demoIdentity && num(window.demoIdentity.ownerId) && num(window.demoIdentity.vesselId)){
+        ident = { ownerId: num(window.demoIdentity.ownerId), vesselId: num(window.demoIdentity.vesselId) };
+      }
+    }catch(e){}
+  }
 
   if (!ident) ident = parseIdentityText();
   if (!ident) ident = parseLS("bmStableIdentity");
   if (!ident) ident = parseLS("bmDemoIdentity");
   if (!ident) ident = parseLS("demoIdentity");
-  if (!ident) ident = { ownerId: 1, vesselId: 1 }; // final demo fallback
 
   // Persist it so it stays stable
   try{

@@ -112,6 +112,10 @@ app.post("/api/demo/reset", (req, res) => {
     JSON.parse(raw); // validity check
     fs.writeFileSync(live, raw, "utf8");
 
+      fs.writeFileSync(path.join(__dirname, "data", "ownerProfile.json"), "null\n", "utf8");
+      fs.writeFileSync(path.join(__dirname, "data", "vesselProfile.json"), "null\n", "utf8");
+      fs.writeFileSync(path.join(__dirname, "data", "vesselDocuments.json"), "[]\n", "utf8");
+
     /* BM_RELOAD_BOOKINGS_AFTER_CLEARRESET_V1: keep in-memory bookings aligned with disk after reset */
     try {
       if (bookingsRouter && typeof bookingsRouter.reloadBookingsFromDisk === "function") {
@@ -121,7 +125,7 @@ app.post("/api/demo/reset", (req, res) => {
       console.error("Failed to reload bookings after demo reset:", reloadErr);
     }
 
-    return res.json({ message: "Demo reset complete (bookings restored from baseline)." });
+    return res.json({ message: "Demo reset complete (bookings restored and boatie data cleared)." });
   } catch (e) {
     return res.status(500).json({ message: "Reset failed.", error: String(e && e.message ? e.message : e) });
   }
