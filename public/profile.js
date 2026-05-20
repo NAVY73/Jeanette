@@ -174,7 +174,7 @@ function apiBase() {
   }
   
   async function saveOwner() {
-    const url = `${apiBase()}/api/owner`;
+    const url = `${apiBase()}/api/owners`;
     const payload = {
       id: getStoredOwnerId(),
       fullName: $('owner_fullName').value,
@@ -219,7 +219,7 @@ function apiBase() {
   }
   
   async function saveVessel() {
-    const url = `${apiBase()}/api/vessel`;
+    const url = `${apiBase()}/api/vessels`;
   
     const payload = {
       id: getStoredVesselId(),
