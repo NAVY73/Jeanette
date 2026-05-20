@@ -269,8 +269,15 @@ function apiBase() {
     if (!expiryDateIso) throw new Error('Expiry Date is required.');
     if (expiryDateIso < issueDateIso) throw new Error('Expiry Date cannot be before Issue Date.');
   
+    let activeVesselId = getStoredVesselId();
+    if (!activeVesselId) {
+      const activeVessel = await fetchJson(`${apiBase()}/api/vessel`);
+      activeVesselId = activeVessel && activeVessel.id;
+      storeVesselId(activeVesselId);
+    }
+
     const payload = {
-      vesselId: getStoredVesselId(),
+      vesselId: activeVesselId,
       type,
       issuer,
       issueDate: issueDateIso,
