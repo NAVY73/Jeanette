@@ -13,7 +13,14 @@ function nextId(items) {
 
 router.get('/', (req, res) => {
   const docs = readJson('vesselDocuments.json', []);
-  res.json(docs);
+  const vessel = readJson('vesselProfile.json', null);
+  const vesselId = Number((req.query && req.query.vesselId) || (vessel && vessel.id) || 0);
+
+  if (vesselId) {
+    return res.json(docs.filter(d => Number(d.vesselId) === vesselId));
+  }
+
+  res.json([]);
 });
 
 /**
@@ -38,7 +45,7 @@ router.post('/', (req, res) => {
 
   const doc = {
     id: nextId(docs),
-    vesselId: body.vesselId || 1,
+    vesselId: Number(body.vesselId || (readJson('vesselProfile.json', null) || {}).id || 0),
     type: body.type,
     issuer: body.issuer || '',
     policyNumber: body.policyNumber || '',
