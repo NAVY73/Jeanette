@@ -192,12 +192,20 @@ Tip: leave blank for hosted demos (defaults to <span class="pill">this site</spa
       <input id="decisionBookingId" type="hidden" />
 
       <div class="row" style="margin-top:10px;">
+        <div class="k">Approval conditions</div>
+        <div>
+          <textarea id="approvalConditions" rows="3" placeholder="Optional operational conditions (e.g. no shore power connection until valid inspection is provided)"></textarea>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
         <div class="k">Decline reason</div>
         <div><textarea id="declineReason" rows="2" placeholder="Optional reason shown in audit trail"></textarea></div>
       </div>
 
       <div class="actions" style="margin-top:10px;">
         <button id="approveBtn" class="btn-primary">Approve</button>
+        <button id="approveConditionalBtn" class="btn-primary">Approve With Conditions</button>
         <button id="declineBtn" class="btn-decline">Decline</button>
       </div>
     </div>

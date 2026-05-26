@@ -862,14 +862,20 @@ router.post(
         }
     
     // audit trail
-booking.status = 'approved';
-      // PHASE16_PERSIST_DECISIONS: keep disk + memory in sync for availability/UI
-      saveBookingsToDisk();
-booking.approvedAt = new Date().toISOString();
-booking.declinedAt = null;
-booking.declineReason = "";
-booking.decisionByUserId = req.user.id;
-booking.decisionType = 'approved';
+    const requestedDecisionType = String((req.body && req.body.decisionType) || 'approved').trim();
+    const approvalConditions = String((req.body && req.body.approvalConditions) || '').trim();
+
+    booking.status = 'approved';
+    booking.approvedAt = new Date().toISOString();
+    booking.declinedAt = null;
+    booking.declineReason = "";
+    booking.decisionByUserId = req.user.id;
+    booking.decisionType = requestedDecisionType === 'approved_with_conditions' ? 'approved_with_conditions' : 'approved';
+    booking.approvalConditions = booking.decisionType === 'approved_with_conditions' ? approvalConditions : "";
+
+    // PHASE_CONDITIONAL_APPROVAL: persist complete approval audit trail
+    saveBookingsToDisk();
+
     res.json({
       message: 'BoatiesMate – Booking approved',
       approvedBy: req.user,

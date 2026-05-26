@@ -495,6 +495,11 @@ if (extraList.length) {
       var btn = qs("declineBtn");
       if (btn) btn.disabled = !enabled;
     }
+
+    function setConditionalApproveEnabled(enabled) {
+      var btn = qs("approveConditionalBtn");
+      if (btn) btn.disabled = !enabled;
+    }
   // ---------- Phase 6: Post-decision UX reinforcement ----------
 function clearDeclineReasonInput() {
     var el = qs("declineReason");
@@ -717,6 +722,7 @@ function renderAppSummary(pack){
       var canDecline = isPending;
   
       setApproveEnabled(canApprove);
+      setConditionalApproveEnabled(canApprove);
       setDeclineEnabled(canDecline);
   
       // Guidance banner (use consistent wording)
@@ -747,6 +753,7 @@ function renderAppSummary(pack){
         if (decisionInFlight) return;
         decisionInFlight = true;
         setApproveEnabled(false);
+        setConditionalApproveEnabled(false);
         setDeclineEnabled(false);
       
         try {
@@ -787,6 +794,47 @@ showBanner(
         }
       }      
   
+      async function approveBookingWithConditions() {
+        clearBanner();
+        var base = apiBase();
+        var id = (qs("decisionBookingId") && qs("decisionBookingId").value) || "";
+        var conditions = (qs("approvalConditions") && qs("approvalConditions").value) || "";
+
+        if (!id) return showBanner("warn", "Approve With Conditions", "<div>No booking loaded.</div>");
+        if (!conditions.trim()) {
+          return showBanner("warn", "Conditions required", "<div>Please enter the operational condition before using Approve With Conditions.</div>");
+        }
+
+        if (decisionInFlight) return;
+        decisionInFlight = true;
+        setApproveEnabled(false);
+        setConditionalApproveEnabled(false);
+        setDeclineEnabled(false);
+
+        try {
+          await fetchJson(base + "/api/bookings/" + id + "/approve", {
+            method: "POST",
+            body: JSON.stringify({
+              decisionType: "approved_with_conditions",
+              approvalConditions: conditions
+            }),
+          });
+
+          showBanner("success", "Approved With Conditions", "<div>Booking approved with operational conditions.</div>");
+          await loadPack();
+          setTimeout(scrollToDecisionSummary, 50);
+        } catch (e) {
+          showBanner(
+            "error",
+            "Conditional approval failed",
+            "<div><strong>" + esc((e.body && e.body.error) || e.message || "Request failed") + "</strong></div>" +
+              "<div class='muted' style='margin-top:6px;'>HTTP: " + esc(String(e.status || "")) + "</div>"
+          );
+        } finally {
+          decisionInFlight = false;
+        }
+      }
+
       async function declineBooking() {
         clearBanner();
         var base = apiBase();
@@ -833,6 +881,9 @@ showBanner(
       var approveBtn = qs("approveBtn");
       if (approveBtn) approveBtn.onclick = approveBooking;
   
+      var approveConditionalBtn = qs("approveConditionalBtn");
+      if (approveConditionalBtn) approveConditionalBtn.onclick = approveBookingWithConditions;
+
       var declineBtn = qs("declineBtn");
       if (declineBtn) declineBtn.onclick = declineBooking;
   
