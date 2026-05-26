@@ -131,12 +131,15 @@ function apiBase() {
     body.innerHTML = '';
   
     if (!docs || docs.length === 0) {
-      body.innerHTML = `<tr><td colspan="6" class="muted">No documents saved yet.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="7" class="muted">No documents saved yet.</td></tr>`;
       return;
     }
   
     for (const d of docs) {
       const cov = d.coverageAmountNZD ? String(d.coverageAmountNZD) : '';
+      const evidence = d.file && d.file.url
+        ? `<a href="${d.file.url}" target="_blank" rel="noopener">View Document</a>`
+        : '<span class="muted small">No file</span>';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${d.id}</td>
@@ -144,6 +147,7 @@ function apiBase() {
         <td>${formatNzDate(d.issueDate)}</td>
         <td>${formatNzDate(d.expiryDate)}</td>
         <td>${cov}</td>
+        <td>${evidence}</td>
         <td><button data-del="${d.id}">Delete</button></td>
       `;
       body.appendChild(tr);
@@ -262,15 +266,14 @@ function apiBase() {
   async function addDoc() {
     const type = $('doc_type').value;
     const issuer = $('doc_issuer').value.trim();
-  
-    // Accept NZ/AU input but store ISO
+
     const issueDateIso = toIsoDate($('doc_issueDate').value.trim(), 'Issue Date');
     const expiryDateIso = toIsoDate($('doc_expiryDate').value.trim(), 'Expiry Date');
-  
+
     if (!issueDateIso) throw new Error('Issue Date is required.');
     if (!expiryDateIso) throw new Error('Expiry Date is required.');
     if (expiryDateIso < issueDateIso) throw new Error('Expiry Date cannot be before Issue Date.');
-  
+
     let activeVesselId = getStoredVesselId();
     if (!activeVesselId) {
       const activeVessel = await fetchJson(`${apiBase()}/api/vessel`);
@@ -278,40 +281,43 @@ function apiBase() {
       storeVesselId(activeVesselId);
     }
 
-    const payload = {
-      vesselId: activeVesselId,
-      type,
-      issuer,
-      issueDate: issueDateIso,
-      expiryDate: expiryDateIso
-    };
-  
+    const formData = new FormData();
+    formData.append('vesselId', String(activeVesselId || ''));
+    formData.append('type', type);
+    formData.append('issuer', issuer);
+    formData.append('issueDate', issueDateIso);
+    formData.append('expiryDate', expiryDateIso);
+
     if (type === 'INSURANCE') {
       const coverage = Number($('doc_coverage').value || 0);
       if (!coverage) {
         throw new Error('For INSURANCE, Coverage Amount NZD is required.');
       }
-      payload.policyNumber = $('doc_policyNumber').value.trim();
-      payload.coverageAmountNZD = coverage;
+      formData.append('policyNumber', $('doc_policyNumber').value.trim());
+      formData.append('coverageAmountNZD', String(coverage));
     }
-  
+
+    const fileInput = $('doc_file');
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      formData.append('documentFile', fileInput.files[0]);
+    }
+
     const url = `${apiBase()}/api/vessel-documents`;
     await fetchJson(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: formData
     });
-  
-    // reset a few fields
+
     $('doc_issuer').value = '';
     $('doc_issueDate').value = '';
     $('doc_expiryDate').value = '';
     $('doc_policyNumber').value = '';
     $('doc_coverage').value = '';
-  
+    if ($('doc_file')) $('doc_file').value = '';
+
     showStatus('ok', 'Document added.');
   }
-  
+
   async function deleteDoc(id) {
     const url = `${apiBase()}/api/vessel-documents/${id}`;
     await fetchJson(url, { method: 'DELETE' });

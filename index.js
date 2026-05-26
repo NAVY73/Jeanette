@@ -36,6 +36,7 @@ app.use(cors());
 
 // Serve the Demo Home (public/index.html) at "/"
 app.use(express.static(path.join(__dirname, "public")));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Keep API / logic routes AFTER static so "/" isn't hijacked
 app.use(decisionIntelRoutes);

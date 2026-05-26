@@ -1,6 +1,20 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const pathLib = require('path');
 const { readJson, writeJson } = require('../utils/jsonStore');
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/compliance');
+  },
+  filename: function (req, file, cb) {
+    const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    cb(null, safe);
+  }
+});
+
+const upload = multer({ storage });
 
 function nowIso() {
   return new Date().toISOString();
@@ -32,7 +46,7 @@ router.get('/', (req, res) => {
  * - issueDate: "YYYY-MM-DD"
  * - expiryDate: "YYYY-MM-DD"
  */
-router.post('/', (req, res) => {
+router.post('/', upload.single('documentFile'), (req, res) => {
   const docs = readJson('vesselDocuments.json', []);
 
   const body = req.body || {};
@@ -52,7 +66,14 @@ router.post('/', (req, res) => {
     coverageAmountNZD: body.coverageAmountNZD || null,
     issueDate: body.issueDate,
     expiryDate: body.expiryDate,
-    file: body.file || null,
+    file: req.file ? {
+      originalName: req.file.originalname,
+      filename: req.file.filename,
+      mimeType: req.file.mimetype,
+      size: req.file.size,
+      url: '/uploads/compliance/' + req.file.filename,
+      uploadedAt: nowIso()
+    } : (body.file || null),
     createdAt: nowIso(),
     updatedAt: nowIso()
   };
