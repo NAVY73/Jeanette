@@ -96,10 +96,10 @@
 
         localStorage.setItem(LS_VESSEL_ID, String(vesselId));
 
-        showMsg("Saved. Vessel ID = " + vesselId + ". Continuing to Compliance Upload…", false);
+        showMsg("Saved. Vessel ID = " + vesselId + ". Continue to Profile to manage compliance evidence.", false);
 
         setTimeout(() => {
-          window.location.href = "compliance-upload.html";
+          window.location.href = "profile.html";
         }, 500);
       } catch (err) {
         showMsg("Save failed: " + (err && err.message ? err.message : err), true);

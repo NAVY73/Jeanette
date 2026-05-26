@@ -83,6 +83,40 @@ router.post('/', upload.single('documentFile'), (req, res) => {
   res.status(201).json(doc);
 });
 
+router.post('/:id/file', upload.single('documentFile'), (req, res) => {
+  const docs = readJson('vesselDocuments.json', []);
+  const id = Number(req.params.id);
+
+  const doc = docs.find(d => Number(d.id) === id);
+
+  if (!doc) {
+    return res.status(404).json({ error: 'Document not found' });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'documentFile upload is required' });
+  }
+
+  doc.file = {
+    originalName: req.file.originalname,
+    filename: req.file.filename,
+    mimeType: req.file.mimetype,
+    size: req.file.size,
+    url: '/uploads/compliance/' + req.file.filename,
+    uploadedAt: nowIso()
+  };
+
+  doc.updatedAt = nowIso();
+
+  writeJson('vesselDocuments.json', docs);
+
+  res.json({
+    uploaded: true,
+    documentId: id,
+    file: doc.file
+  });
+});
+
 router.delete('/:id', (req, res) => {
   const docs = readJson('vesselDocuments.json', []);
   const id = Number(req.params.id);

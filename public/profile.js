@@ -140,6 +140,8 @@ function apiBase() {
       const evidence = d.file && d.file.url
         ? `<a href="${d.file.url}" target="_blank" rel="noopener">View Document</a>`
         : '<span class="muted small">No file</span>';
+      const uploadLabel = d.file ? 'Replace Evidence' : 'Upload Evidence';
+
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${d.id}</td>
@@ -148,11 +150,40 @@ function apiBase() {
         <td>${formatNzDate(d.expiryDate)}</td>
         <td>${cov}</td>
         <td>${evidence}</td>
-        <td><button data-del="${d.id}">Delete</button></td>
+        <td>
+          <input type="file" data-file="${d.id}" accept=".pdf,.png,.jpg,.jpeg,image/*,application/pdf" />
+          <button data-upload="${d.id}">${uploadLabel}</button>
+          <button data-del="${d.id}">Delete</button>
+        </td>
       `;
       body.appendChild(tr);
     }
   
+    // Wire upload buttons
+    body.querySelectorAll('button[data-upload]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-upload');
+
+        const input = body.querySelector(`input[data-file="${id}"]`);
+
+        if (!input || !input.files || !input.files[0]) {
+          alert('Choose a file first.');
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('documentFile', input.files[0]);
+
+        await fetchJson(`${apiBase()}/api/vessel-documents/${id}/file`, {
+          method: 'POST',
+          body: formData
+        });
+
+        showStatus('ok', 'Evidence uploaded.');
+        await reloadAll();
+      });
+    });
+
     // Wire delete buttons
     body.querySelectorAll('button[data-del]').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -297,11 +328,6 @@ function apiBase() {
       formData.append('coverageAmountNZD', String(coverage));
     }
 
-    const fileInput = $('doc_file');
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-      formData.append('documentFile', fileInput.files[0]);
-    }
-
     const url = `${apiBase()}/api/vessel-documents`;
     await fetchJson(url, {
       method: 'POST',
@@ -313,7 +339,7 @@ function apiBase() {
     $('doc_expiryDate').value = '';
     $('doc_policyNumber').value = '';
     $('doc_coverage').value = '';
-    if ($('doc_file')) $('doc_file').value = '';
+
 
     showStatus('ok', 'Document added.');
   }
