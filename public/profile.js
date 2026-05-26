@@ -175,6 +175,7 @@ function apiBase() {
     $('owner_emergencyPhone').value = owner.emergencyContactPhone || '';
     storeOwnerId(owner.id);
     $('ownerMeta').textContent = formatMeta(owner);
+    return owner;
   }
   
   async function saveOwner() {
@@ -220,6 +221,7 @@ function apiBase() {
     $('vessel_notes').value = v.notes || '';
     storeVesselId(v.id);
     $('vesselMeta').textContent = formatMeta(v);
+    return v;
   }
   
   async function saveVessel() {
@@ -330,42 +332,98 @@ function apiBase() {
     const el = $("readinessPanel");
     if (!el) return;
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    function normaliseType(value) {
+      return String(value || "").trim().toUpperCase();
+    }
+
+    function docFor(type) {
+      return (docs || []).find(d => normaliseType(d.type) === type);
+    }
+
+    function isExpired(doc) {
+      if (!doc || !doc.expiryDate) return false;
+      const expiry = new Date(doc.expiryDate);
+      expiry.setHours(0, 0, 0, 0);
+      return expiry < today;
+    }
+
+    function isExpiringSoon(doc) {
+      if (!doc || !doc.expiryDate || isExpired(doc)) return false;
+      const expiry = new Date(doc.expiryDate);
+      expiry.setHours(0, 0, 0, 0);
+      const days = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+      return days <= 30;
+    }
+
     const hasOwner = !!(owner && owner.id && owner.fullName && owner.email);
     const hasVessel = !!(vessel && vessel.id && vessel.name);
+    const usesShorePower = !!(vessel && vessel.hasShorePower);
 
-    const docTypes = (docs || []).map(d => String(d.type || "").toUpperCase());
-    const hasInsurance = docTypes.includes("INSURANCE");
-    const hasEwof = docTypes.includes("EWOF");
-    const hasShore = docTypes.includes("SHORE_POWER_LEAD_TEST");
-    const hasBio = docTypes.includes("BIOFOULING_INSPECTION");
+    const requirements = [
+      { label: "Boatie profile details", ok: hasOwner },
+      { label: "Vessel details", ok: hasVessel },
+      { label: "Insurance", doc: docFor("INSURANCE") },
+      { label: "EWOF", doc: docFor("EWOF") },
+      { label: "Biofouling Inspection", doc: docFor("BIOFOULING_INSPECTION") }
+    ];
+
+    if (usesShorePower) {
+      requirements.push({
+        label: "Shore Power Lead Test Tag",
+        doc: docFor("SHORE_POWER_LEAD_TEST"),
+        note: "Required because this vessel uses shore power."
+      });
+    }
 
     const missing = [];
-    if (!hasOwner) missing.push("Boatie profile details");
-    if (!hasVessel) missing.push("Vessel details");
-    if (!hasInsurance) missing.push("Insurance record");
-    if (!hasEwof) missing.push("EWOF record");
-    if (vessel && vessel.hasShorePower && !hasShore) missing.push("Shore Power Connection Inspection");
-    if (!hasBio) missing.push("Biofouling Inspection");
+    const expired = [];
+    const warnings = [];
 
-    if (missing.length === 0) {
-      el.className = "status ok";
-      el.innerHTML = "✓ READY TO BOOK<br><span class='muted'>Owner, vessel and required compliance records are complete.</span>";
+    requirements.forEach(req => {
+      if (req.ok === true) return;
+
+      if (!req.doc) {
+        missing.push(req.label + (req.note ? " — " + req.note : ""));
+        return;
+      }
+
+      if (isExpired(req.doc)) {
+        expired.push(req.label + " expired on " + req.doc.expiryDate);
+        return;
+      }
+
+      if (isExpiringSoon(req.doc)) {
+        warnings.push(req.label + " expires soon on " + req.doc.expiryDate);
+      }
+    });
+
+    if (missing.length === 0 && expired.length === 0) {
+      el.className = warnings.length ? "status warn" : "status ok";
+      el.innerHTML =
+        (warnings.length ? "⚠ READY TO BOOK — CHECK EXPIRIES" : "✓ READY TO BOOK") +
+        "<br><span class='muted'>Owner, vessel and required compliance records are complete.</span>" +
+        (warnings.length ? "<br>" + warnings.map(x => "• " + x).join("<br>") : "");
       return;
     }
 
     el.className = "status warn";
     el.innerHTML =
-      "⚠ NOT READY YET<br>" +
+      "⚠ NOT READY TO BOOK<br>" +
       "<span class='muted'>Complete the following before requesting a booking:</span><br>" +
-      missing.map(x => "• " + x).join("<br>");
+      missing.map(x => "• Missing: " + x).concat(expired.map(x => "• Expired: " + x)).join("<br>");
   }
 
   async function reloadAll() {
-    await loadOwner();
-    await loadVessel();
+    const owner = await loadOwner();
+    const v = await loadVessel();
     const docs = await loadDocs();
-    renderDocs(docs);
-    renderReadiness(owner, v, docs);
+    const activeVesselId = v && v.id ? Number(v.id) : getStoredVesselId();
+    const scopedDocs = (docs || []).filter(d => !activeVesselId || Number(d.vesselId) === Number(activeVesselId));
+    renderDocs(scopedDocs);
+    renderReadiness(owner, v, scopedDocs);
     setInsuranceFieldVisibility();
     try{ showStatus('ok', ''); }catch(e){}
   }
@@ -383,103 +441,10 @@ function apiBase() {
         showStatus('bad', err.message);
       }
     });
-    $('btnTestPack').addEventListener('click', () => testPack().catch(err => showStatus('bad', err.message)));
+    const btnTestPack = $('btnTestPack');
+    if (btnTestPack) {
+      btnTestPack.addEventListener('click', () => testPack().catch(err => showStatus('bad', err.message)));
+    }
   
     reloadAll().catch(err => showStatus('bad', err.message));
   });
-
-// =====================================================
-// Phase 15 CLEAN: Owner/Vessel save -> localStorage IDs
-// Single source of truth (avoid conflicting handlers)
-// =====================================================
-
-function phase15Set(key, val) {
-  try {
-    if (val === null || val === undefined || val === "") return;
-    localStorage.setItem(key, String(val));
-  } catch (e) {}
-}
-
-async function phase15SaveOwnerClean() {
-  try {
-    const payload = {
-      fullName: $("owner_fullName").value.trim(),
-      email: $("owner_email").value.trim(),
-      phone: $("owner_phone").value.trim(),
-      region: $("owner_region").value.trim(),
-      addressLine1: $("owner_addressLine1").value.trim(),
-      addressLine2: $("owner_addressLine2").value.trim(),
-      city: $("owner_city").value.trim(),
-      postcode: $("owner_postcode").value.trim(),
-      emergencyName: $("owner_emergencyName").value.trim(),
-      emergencyPhone: $("owner_emergencyPhone").value.trim()
-    };
-
-    const resp = await fetchJson(apiBase() + "/api/owners", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const owner = resp.owner || resp;
-    if (!owner || !owner.id) throw new Error("Owner saved but could not read owner.id");
-
-    phase15Set("BM_OWNER_ID", owner.id);
-    $("ownerMeta").textContent = "Owner ID: " + owner.id;
-
-    showStatus("ok", "Owner saved. BM_OWNER_ID = " + owner.id);
-  } catch (e) {
-    showStatus("bad", "Owner save failed: " + (e.message || e));
-  }
-}
-
-async function phase15SaveVesselClean() {
-  try {
-    const ownerId = Number(localStorage.getItem("BM_OWNER_ID") || 0);
-    if (!ownerId) throw new Error("Save Boatie Profile first (BM_OWNER_ID missing).");
-
-    const payload = {
-      ownerId,
-      name: $("vessel_name").value.trim(),
-      type: $("vessel_type").value.trim(),
-      lengthM: ($("vessel_loa").value === "" ? null : Number($("vessel_loa").value)),
-      beamM: ($("vessel_beam").value === "" ? null : Number($("vessel_beam").value)),
-      draftM: ($("vessel_draft").value === "" ? null : Number($("vessel_draft").value)),
-      registration: $("vessel_reg").value.trim(),
-      hasShorePower: $("vessel_shorePower").checked
-    };
-
-    const resp = await fetchJson(apiBase() + "/api/vessels", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const vessel = resp.vessel || resp;
-    if (!vessel || !vessel.id) throw new Error("Vessel saved but could not read vessel.id");
-
-    phase15Set("BM_VESSEL_ID", vessel.id);
-    $("vesselMeta").textContent = "Vessel ID: " + vessel.id;
-
-    showStatus("ok", "Vessel saved. BM_VESSEL_ID = " + vessel.id);
-  } catch (e) {
-    showStatus("bad", "Vessel save failed: " + (e.message || e));
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const btnOwner = $("btnSaveOwner");
-  const btnVessel = $("btnSaveVessel");
-
-  if (btnOwner) {
-    // Replace any existing onclick to avoid double-firing
-    btnOwner.onclick = null;
-    btnOwner.addEventListener("click", phase15SaveOwnerClean);
-  }
-
-  if (btnVessel) {
-    btnVessel.onclick = null;
-    btnVessel.addEventListener("click", phase15SaveVesselClean);
-  }
-});
-
