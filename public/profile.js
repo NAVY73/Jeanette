@@ -326,11 +326,46 @@ function apiBase() {
     showStatus('ok', 'Application Pack loaded.');
   }
   
+  function renderReadiness(owner, vessel, docs) {
+    const el = $("readinessPanel");
+    if (!el) return;
+
+    const hasOwner = !!(owner && owner.id && owner.fullName && owner.email);
+    const hasVessel = !!(vessel && vessel.id && vessel.name);
+
+    const docTypes = (docs || []).map(d => String(d.type || "").toUpperCase());
+    const hasInsurance = docTypes.includes("INSURANCE");
+    const hasEwof = docTypes.includes("EWOF");
+    const hasShore = docTypes.includes("SHORE_POWER_LEAD_TEST");
+    const hasBio = docTypes.includes("BIOFOULING_INSPECTION");
+
+    const missing = [];
+    if (!hasOwner) missing.push("Boatie profile details");
+    if (!hasVessel) missing.push("Vessel details");
+    if (!hasInsurance) missing.push("Insurance record");
+    if (!hasEwof) missing.push("EWOF record");
+    if (vessel && vessel.hasShorePower && !hasShore) missing.push("Shore Power Connection Inspection");
+    if (!hasBio) missing.push("Biofouling Inspection");
+
+    if (missing.length === 0) {
+      el.className = "status ok";
+      el.innerHTML = "✓ READY TO BOOK<br><span class='muted'>Owner, vessel and required compliance records are complete.</span>";
+      return;
+    }
+
+    el.className = "status warn";
+    el.innerHTML =
+      "⚠ NOT READY YET<br>" +
+      "<span class='muted'>Complete the following before requesting a booking:</span><br>" +
+      missing.map(x => "• " + x).join("<br>");
+  }
+
   async function reloadAll() {
     await loadOwner();
     await loadVessel();
     const docs = await loadDocs();
     renderDocs(docs);
+    renderReadiness(owner, v, docs);
     setInsuranceFieldVisibility();
     try{ showStatus('ok', ''); }catch(e){}
   }
