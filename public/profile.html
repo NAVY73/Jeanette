@@ -29,7 +29,7 @@
   </style>
 </head>
 <body>
-  <div class="demo-badge">BoatiesMate – Boatie Setup</div>
+<!-- Hard Save Test Controls removed for investor/customer presentation -->
   <div class="muted" style="margin-bottom:12px;">
     <a class="btn-secondary" href="boatie-demo.html">← Back to Boatie Booking</a>
 </div>
@@ -40,7 +40,7 @@
         src="/boatiesmate-secondary-long-ocean.png"
         alt="BoatiesMate"
       />
-      <span class="role-pill role-pill--boatie">Boatie</span>
+      <!-- Boatie role pill removed for cleaner onboarding presentation -->
     </div>
   </header>
 <h1>Boatie Onboarding</h1>
@@ -121,7 +121,7 @@
       </div>
     </div>
 
-    <button id="btnSaveOwner" class="btn-primary">Save Boatie Profile</button>
+    <button id="btnSaveOwner" type="button" class="btn-primary"  >Save Boatie Profile</button>
     <div class="muted small" id="ownerMeta"></div>
   </div>
 
@@ -191,7 +191,7 @@
     <label>Notes</label>
     <textarea id="vessel_notes" rows="3"></textarea>
 
-    <button id="btnSaveVessel" class="btn-primary">Save Vessel Details</button>
+    <button id="btnSaveVessel" type="button" class="btn-primary"  >Save Vessel Details</button>
     <div class="muted small" id="vesselMeta"></div>
   </div>
 
@@ -201,13 +201,10 @@
       Add the required compliance records for this vessel before requesting a berth or mooring. These records are checked by BoatiesMate before a booking can be submitted.
     </p>
 
-    <div class="status warn" style="display:block; margin-bottom:14px;">
-      <strong>Required records commonly include:</strong><br/>
-      • Insurance (Public Liability)<br/>
-      • EWoF / WoEF<br/>
-      • Shore Power Lead Test Tag (if connecting to marina shore power)<br/>
-      • Biofouling Inspection
-    </div>
+      <h3 style="margin-top: 14px;">Compliance Status</h3>
+      <div id="complianceStatusPanel" class="status warn" style="display:block; margin-bottom:14px;">
+        Compliance status will appear here after your profile, vessel and documents are loaded.
+      </div>
 
     <div class="row">
       <div>
@@ -269,12 +266,114 @@
     </table>
   </div>
 
-  <script src="/profile.js"></script>
+  <script src="/profile.js?v=directsave1"></script>
 <div class="card" style="margin-top:12px;">
   <h3>Next Step</h3>
   <p>Use this option if you want to register another vessel.</p>
   <a class="btn-primary" href="vessel-setup.html">Register Additional Vessel</a>
 </div>
+
+
+<!-- BM_INLINE_SAVE_TEST -->
+<script>
+(function(){
+  function status(msg, bad){
+    var el = document.getElementById("status");
+    if (!el) { alert(msg); return; }
+    el.style.display = "block";
+    el.className = "status " + (bad ? "bad" : "ok");
+    el.textContent = msg;
+  }
+
+  window.addEventListener("load", function(){
+    status("Inline save test loaded.");
+
+    var ownerBtn = document.getElementById("btnSaveOwner");
+    var vesselBtn = document.getElementById("btnSaveVessel");
+
+    if (ownerBtn) ownerBtn.onclick = async function(e){
+      e.preventDefault();
+      status("Saving boatie profile via inline handler...");
+      try {
+        var res = await fetch("/api/owner", {
+          method: "PUT",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({
+            fullName: document.getElementById("owner_fullName").value,
+            email: document.getElementById("owner_email").value,
+            phone: document.getElementById("owner_phone").value,
+            addressLine1: document.getElementById("owner_addressLine1").value,
+            addressLine2: document.getElementById("owner_addressLine2").value,
+            city: document.getElementById("owner_city").value,
+            region: document.getElementById("owner_region").value,
+            postcode: document.getElementById("owner_postcode").value,
+            emergencyContactName: document.getElementById("owner_emergencyName").value,
+            emergencyContactPhone: document.getElementById("owner_emergencyPhone").value
+          })
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error || ("HTTP " + res.status));
+        localStorage.setItem("bmOwnerId", String(data.id));
+        status("Boatie profile saved.");
+        ownerBtn.style.backgroundColor = "#1f8f3a";
+        ownerBtn.style.borderColor = "#1f8f3a";
+        ownerBtn.style.color = "#fff";
+        ownerBtn.style.background = "#1f8f3a";
+        ownerBtn.style.borderColor = "#1f8f3a";
+        ownerBtn.style.color = "#fff";
+        ownerBtn.textContent = "Boatie Profile Saved ✔";
+        ownerBtn.style.background = "#1f8f3a";
+        ownerBtn.style.borderColor = "#1f8f3a";
+        ownerBtn.style.color = "#fff";
+      } catch(err) {
+        status("Boatie profile save failed: " + err.message, true);
+      }
+    };
+
+    if (vesselBtn) vesselBtn.onclick = async function(e){
+      e.preventDefault();
+      status("Saving vessel details via inline handler...");
+      try {
+        var res = await fetch("/api/vessel", {
+          method: "PUT",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({
+            ownerId: Number(localStorage.getItem("bmOwnerId") || 0) || null,
+            name: document.getElementById("vessel_name").value,
+            type: document.getElementById("vessel_type").value,
+            make: document.getElementById("vessel_make").value,
+            model: document.getElementById("vessel_model").value,
+            registrationNumber: document.getElementById("vessel_reg").value,
+            homePort: document.getElementById("vessel_homePort").value,
+            lengthOverallM: document.getElementById("vessel_loa").value ? Number(document.getElementById("vessel_loa").value) : null,
+            maxInclusiveLengthM: document.getElementById("vessel_maxInc").value ? Number(document.getElementById("vessel_maxInc").value) : null,
+            beamM: document.getElementById("vessel_beam").value ? Number(document.getElementById("vessel_beam").value) : null,
+            draftM: document.getElementById("vessel_draft").value ? Number(document.getElementById("vessel_draft").value) : null,
+            hasShorePower: document.getElementById("vessel_shorePower").checked,
+            notes: document.getElementById("vessel_notes").value
+          })
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error || ("HTTP " + res.status));
+        localStorage.setItem("bmVesselId", String(data.id));
+        status("Vessel details saved.");
+        vesselBtn.style.backgroundColor = "#1f8f3a";
+        vesselBtn.style.borderColor = "#1f8f3a";
+        vesselBtn.style.color = "#fff";
+        vesselBtn.style.background = "#1f8f3a";
+        vesselBtn.style.borderColor = "#1f8f3a";
+        vesselBtn.style.color = "#fff";
+        vesselBtn.textContent = "Vessel Details Saved ✔";
+        vesselBtn.style.background = "#1f8f3a";
+        vesselBtn.style.borderColor = "#1f8f3a";
+        vesselBtn.style.color = "#fff";
+      } catch(err) {
+        status("Vessel save failed: " + err.message, true);
+      }
+    };
+  });
+})();
+</script>
 
 </body>
 </html>

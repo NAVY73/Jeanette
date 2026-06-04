@@ -235,8 +235,9 @@ function apiBase() {
       body: JSON.stringify(payload)
     });
   
+    storeOwnerId(owner.id);
     $('ownerMeta').textContent = formatMeta(owner);
-    showStatus('ok', 'Boatie profile saved.');
+    showStatus('ok', 'Boatie profile saved. Owner ID = ' + owner.id);
   }
   
   async function loadVessel() {
@@ -285,8 +286,9 @@ function apiBase() {
       body: JSON.stringify(payload)
     });
   
+    storeVesselId(v.id);
     $('vesselMeta').textContent = formatMeta(v);
-    showStatus('ok', 'Vessel details saved.');
+    showStatus('ok', 'Vessel details saved. Vessel ID = ' + v.id);
   }
   
   async function loadDocs() {
@@ -361,8 +363,19 @@ function apiBase() {
   }
   
   function renderReadiness(owner, vessel, docs) {
-    const el = $("readinessPanel");
-    if (!el) return;
+    const panels = [
+      document.getElementById("readinessPanel"),
+      document.getElementById("complianceStatusPanel")
+    ].filter(Boolean);
+
+    if (!panels.length) return;
+
+    function updatePanels(className, html) {
+      panels.forEach(function (panel) {
+        panel.className = className;
+        panel.innerHTML = html;
+      });
+    }
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -433,19 +446,21 @@ function apiBase() {
     });
 
     if (missing.length === 0 && expired.length === 0) {
-      el.className = warnings.length ? "status warn" : "status ok";
-      el.innerHTML =
+      updatePanels(
+        warnings.length ? "status warn" : "status ok",
         (warnings.length ? "⚠ READY TO BOOK — CHECK EXPIRIES" : "✓ READY TO BOOK") +
         "<br><span class='muted'>Owner, vessel and required compliance records are complete.</span>" +
-        (warnings.length ? "<br>" + warnings.map(x => "• " + x).join("<br>") : "");
+        (warnings.length ? "<br>" + warnings.map(x => "• " + x).join("<br>") : "")
+      );
       return;
     }
 
-    el.className = "status warn";
-    el.innerHTML =
-      "⚠ NOT READY TO BOOK<br>" +
-      "<span class='muted'>Complete the following before requesting a booking:</span><br>" +
-      missing.map(x => "• Missing: " + x).concat(expired.map(x => "• Expired: " + x)).join("<br>");
+      updatePanels(
+        "status warn",
+        "⚠ NOT READY TO BOOK<br>" +
+        "<span class='muted'>Complete the following before requesting a booking:</span><br>" +
+        missing.map(x => "• Missing: " + x).concat(expired.map(x => "• Expired: " + x)).join("<br>")
+      );
   }
 
   async function reloadAll() {
@@ -457,14 +472,34 @@ function apiBase() {
     renderDocs(scopedDocs);
     renderReadiness(owner, v, scopedDocs);
     setInsuranceFieldVisibility();
-    try{ showStatus('ok', ''); }catch(e){}
+    try{
+      const statusEl = $('status');
+      if (statusEl && !statusEl.textContent.trim()) statusEl.style.display = 'none';
+    }catch(e){}
   }
   
   document.addEventListener('DOMContentLoaded', () => {
     $('doc_type').addEventListener('change', setInsuranceFieldVisibility);
     $('btnReloadAll').addEventListener('click', () => reloadAll().catch(err => showStatus('bad', err.message)));
-    $('btnSaveOwner').addEventListener('click', () => saveOwner().catch(err => showStatus('bad', err.message)));
-    $('btnSaveVessel').addEventListener('click', () => saveVessel().catch(err => showStatus('bad', err.message)));
+    $('btnSaveOwner').addEventListener('click', async (e) => {
+      e.preventDefault();
+      showStatus('ok', 'Saving boatie profile...');
+      try {
+        await saveOwner();
+      } catch (err) {
+        showStatus('bad', err.message);
+      }
+    });
+
+    $('btnSaveVessel').addEventListener('click', async (e) => {
+      e.preventDefault();
+      showStatus('ok', 'Saving vessel details...');
+      try {
+        await saveVessel();
+      } catch (err) {
+        showStatus('bad', err.message);
+      }
+    });
     $('btnAddDoc').addEventListener('click', async () => {
       try {
         await addDoc();
@@ -480,3 +515,228 @@ function apiBase() {
   
     reloadAll().catch(err => showStatus('bad', err.message));
   });
+
+// BM_TEMP_DIRECT_SAVE_TEST
+window.addEventListener("load", function(){
+  var status = document.getElementById("status");
+  if (status) {
+    status.style.display = "block";
+    status.className = "status ok";
+    status.textContent = "Profile script loaded.";
+  }
+
+  var ownerBtn = document.getElementById("btnSaveOwner");
+  if (ownerBtn) {
+    ownerBtn.onclick = async function(e){
+      e.preventDefault();
+      var status = document.getElementById("status");
+      if (status) {
+        status.style.display = "block";
+        status.className = "status ok";
+        status.textContent = "Direct owner save test running...";
+      }
+      try {
+        var res = await fetch("/api/owner", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName: document.getElementById("owner_fullName").value,
+            email: document.getElementById("owner_email").value,
+            phone: document.getElementById("owner_phone").value,
+            region: document.getElementById("owner_region").value,
+            city: document.getElementById("owner_city").value
+          })
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error || ("HTTP " + res.status));
+        localStorage.setItem("bmOwnerId", String(data.id));
+        if (status) status.textContent = "Direct owner save OK. Owner ID = " + data.id;
+      } catch (err) {
+        if (status) {
+          status.className = "status bad";
+          status.textContent = "Direct owner save failed: " + err.message;
+        }
+      }
+    };
+  }
+
+  var vesselBtn = document.getElementById("btnSaveVessel");
+  if (vesselBtn) {
+    vesselBtn.onclick = async function(e){
+      e.preventDefault();
+      var status = document.getElementById("status");
+      if (status) {
+        status.style.display = "block";
+        status.className = "status ok";
+        status.textContent = "Direct vessel save test running...";
+      }
+      try {
+        var res = await fetch("/api/vessel", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ownerId: Number(localStorage.getItem("bmOwnerId") || 0) || null,
+            name: document.getElementById("vessel_name").value,
+            type: document.getElementById("vessel_type").value,
+            make: document.getElementById("vessel_make").value,
+            model: document.getElementById("vessel_model").value,
+            registrationNumber: document.getElementById("vessel_reg").value,
+            homePort: document.getElementById("vessel_homePort").value,
+            lengthOverallM: document.getElementById("vessel_loa").value ? Number(document.getElementById("vessel_loa").value) : null,
+            maxInclusiveLengthM: document.getElementById("vessel_maxInc").value ? Number(document.getElementById("vessel_maxInc").value) : null,
+            beamM: document.getElementById("vessel_beam").value ? Number(document.getElementById("vessel_beam").value) : null,
+            draftM: document.getElementById("vessel_draft").value ? Number(document.getElementById("vessel_draft").value) : null,
+            hasShorePower: document.getElementById("vessel_shorePower").checked,
+            notes: document.getElementById("vessel_notes").value
+          })
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error || ("HTTP " + res.status));
+        localStorage.setItem("bmVesselId", String(data.id));
+        if (status) status.textContent = "Direct vessel save OK. Vessel ID = " + data.id;
+      } catch (err) {
+        if (status) {
+          status.className = "status bad";
+          status.textContent = "Direct vessel save failed: " + err.message;
+        }
+      }
+    };
+  }
+});
+
+/* BM_FINAL_DIRECT_SAVE_HANDLERS
+   Final recovery layer: bypasses legacy Profile save-handler conflicts.
+*/
+(function(){
+  function setText(id, text){
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  function getValue(id){
+    var el = document.getElementById(id);
+    return el ? el.value : "";
+  }
+
+  async function bmSaveOwnerDirect(){
+    var btn = document.getElementById("btnSaveOwner");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Saving Owner...";
+    }
+
+    setText("status", "Saving owner profile...");
+
+    try {
+      var payload = {
+        firstName: getValue("owner_firstName"),
+        lastName: getValue("owner_lastName"),
+        email: getValue("owner_email"),
+        phone: getValue("owner_phone")
+      };
+
+      var res = await fetch("/api/owner", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      var data = await res.json().catch(function(){ return {}; });
+
+      if (!res.ok) {
+        throw new Error(data.error || data.message || ("HTTP " + res.status));
+      }
+
+      var owner = data.owner || data;
+      var ownerId = owner.id || data.ownerId || data.id;
+
+      if (ownerId) {
+        window.BM_OWNER_ID = ownerId;
+        setText("ownerId", ownerId);
+      }
+
+      setText("status", "Owner saved successfully" + (ownerId ? " — Owner ID " + ownerId : "") + ".");
+      if (btn) btn.textContent = "Owner Saved ✔";
+    } catch (err) {
+      console.error("BM owner direct save failed:", err);
+      setText("status", "Owner save failed: " + err.message);
+      if (btn) btn.textContent = "Save Owner";
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function bmSaveVesselDirect(){
+    var btn = document.getElementById("btnSaveVessel");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Saving Vessel...";
+    }
+
+    setText("status", "Saving vessel details...");
+
+    try {
+      var ownerId = window.BM_OWNER_ID || getValue("ownerId") || document.getElementById("ownerId")?.textContent;
+
+      var payload = {
+        ownerId: Number(ownerId) || undefined,
+        name: getValue("vessel_name"),
+        vesselName: getValue("vessel_name"),
+        type: getValue("vessel_type"),
+        lengthM: Number(getValue("vessel_length")) || undefined,
+        beamM: Number(getValue("vessel_beam")) || undefined,
+        draftM: Number(getValue("vessel_draft")) || undefined,
+        shorePower: !!document.getElementById("vessel_shorePower")?.checked,
+        notes: getValue("vessel_notes")
+      };
+
+      var res = await fetch("/api/vessel", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      var data = await res.json().catch(function(){ return {}; });
+
+      if (!res.ok) {
+        throw new Error(data.error || data.message || ("HTTP " + res.status));
+      }
+
+      var vessel = data.vessel || data;
+      var vesselId = vessel.id || data.vesselId || data.id;
+
+      if (vesselId) {
+        window.BM_VESSEL_ID = vesselId;
+        setText("vesselId", vesselId);
+      }
+
+      setText("status", "Vessel saved successfully" + (vesselId ? " — Vessel ID " + vesselId : "") + ".");
+      if (btn) btn.textContent = "Vessel Saved ✔";
+    } catch (err) {
+      console.error("BM vessel direct save failed:", err);
+      setText("status", "Vessel save failed: " + err.message);
+      if (btn) btn.textContent = "Save Vessel";
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function install(){
+    var ownerBtn = document.getElementById("btnSaveOwner");
+    var vesselBtn = document.getElementById("btnSaveVessel");
+
+    if (ownerBtn) ownerBtn.onclick = bmSaveOwnerDirect;
+    if (vesselBtn) vesselBtn.onclick = bmSaveVesselDirect;
+
+    console.log("BM_FINAL_DIRECT_SAVE_HANDLERS installed", {
+      ownerButton: !!ownerBtn,
+      vesselButton: !!vesselBtn
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", install);
+  } else {
+    install();
+  }
+})();

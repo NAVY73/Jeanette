@@ -1,16 +1,7 @@
 (function () {
-  const KEY_OPERATOR_MARINA = "bm_operatorMarinaId";
-  const KEY_OPERATOR_EMAIL = "bm_operatorEmail";
-
   const els = {
     btnBoatie: document.getElementById("btnBoatie"),
     btnInbox: document.getElementById("btnInbox"),
-    operatorSelect: document.getElementById("operatorSelect"),
-    btnSetOperator: document.getElementById("btnSetOperator"),
-    btnOpenInboxWithOperator: document.getElementById("btnOpenInboxWithOperator"),
-    operatorStatus: document.getElementById("operatorStatus"),
-    bookingId: document.getElementById("bookingId"),
-    btnOpenReview: document.getElementById("btnOpenReview"),
     resetConfirm: document.getElementById("resetConfirm"),
     btnReset: document.getElementById("btnReset"),
     btnResetHelp: document.getElementById("btnResetHelp"),
@@ -25,23 +16,6 @@
     window.location.href = url;
   }
 
-  function setOperator(marinaId) {
-    localStorage.setItem(KEY_OPERATOR_MARINA, String(marinaId));
-
-    const email = String(marinaId) === "3"
-      ? "operator@westhaven.example"
-      : "operator@gulfharbour.example";
-
-    localStorage.setItem(KEY_OPERATOR_EMAIL, email);
-    els.operatorStatus.textContent =
-      "Operator set: marinaId " + marinaId + " - " + email + " (saved)";
-  }
-
-  function loadOperator() {
-    const current = localStorage.getItem(KEY_OPERATOR_MARINA) || "2";
-    els.operatorSelect.value = current;
-    setOperator(current);
-  }
 
   els.btnBoatie.addEventListener("click", function () {
     nav("/boatie-demo.html");
@@ -49,24 +23,6 @@
 
   els.btnInbox.addEventListener("click", function () {
     nav("/operator-inbox.html");
-  });
-
-  els.btnSetOperator.addEventListener("click", function () {
-    setOperator(els.operatorSelect.value);
-  });
-
-  els.btnOpenInboxWithOperator.addEventListener("click", function () {
-    setOperator(els.operatorSelect.value);
-    nav("/operator-inbox.html");
-  });
-
-  els.btnOpenReview.addEventListener("click", function () {
-    const id = (els.bookingId.value || "").trim();
-    if (!id) {
-      alert("Enter a Booking ID first, for example 101.");
-      return;
-    }
-    nav("/operator-review.html?bookingId=" + encodeURIComponent(id));
   });
 
   els.resetConfirm.addEventListener("input", function () {
@@ -139,17 +95,16 @@
     const ok = (els.baselineConfirm.value || "").trim().toUpperCase() === "BASELINE";
     els.btnBaseline.disabled = !ok;
     els.baselineStatus.textContent = ok
-      ? "Baseline refresh is armed. Click Refresh Baseline."
+      ? "Baseline refresh ready."
       : "Baseline refresh is locked.";
   });
 
   els.btnBaselineHelp.addEventListener("click", function () {
-    alert("Refresh Baseline overwrites the baseline using current bookings.");
+    alert("Refresh Baseline updates the walkthrough dataset using the current bookings.");
   });
 
   els.btnBaseline.addEventListener("click", function () {
     alert("Baseline refresh is intentionally locked for investor walkthrough safety.");
   });
 
-  loadOperator();
 })();

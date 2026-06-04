@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>BoatiesMate – Presenter Console</title>
   <link rel="stylesheet" href="/styles.css" />
   <style>
     .wrap { max-width: 980px; margin: 0 auto; padding: 18px; }
@@ -21,14 +20,19 @@
   </style>
 </head>
 
+
 <body>
+  <div style="margin-bottom:18px;">
+    <h1 style="margin:0;color:#0b2d4d;font-size:32px;font-weight:900;">
+      BoatiesMate - Presenter Console
+    </h1>
+  </div>
+
   <div class="wrap">
     <div class="row" style="justify-content: space-between;">
       <div>
-        <h2 style="margin: 0 0 6px;">BoatiesMate – Presenter Console</h2>
-        <div class="muted">Launch key demo pages, set operator context, jump to a booking, and reset/baseline safely for investor demos.</div>
+        <div class="muted">Launch the key BoatiesMate walkthrough pages and manage demonstration data safely.</div>
       </div>
-      <div class="pill">PRESENTER CONSOLE</div>
     </div>
 
     <div class="grid" style="margin-top: 14px;">
@@ -37,50 +41,12 @@
         <p class="muted">Use these during live demos to keep the flow tight.</p>
         <div class="row">
           <button class="btn-primary" id="btnBoatie">Boatie Booking</button>
-          <button class="btn-secondary" id="btnInbox">Operations Queue</button>
+          <button class="btn-secondary" id="btnInbox">Operator Inbox</button>
         </div>
       </div>
-
-      <div class="card">
-        <h3 style="margin-top: 0;">Operator Selector</h3>
-        <p class="muted">Sets the operator context used by the Operations Queue (remembered).</p>
-
-        <label for="operatorSelect">Operator / Marina</label>
-        <select id="operatorSelect">
-          <option value="2">Gulf Harbour (marinaId 2)</option>
-          <option value="3">Westhaven (marinaId 3)</option>
-        </select>
-
-        <div class="row" style="margin-top: 12px;">
-          <button class="btn-accent" id="btnSetOperator">Set Operator</button>
-          <button class="btn-secondary" id="btnOpenInboxWithOperator">Set + Open Inbox</button>
-        </div>
-
-        <div class="muted" id="operatorStatus" style="margin-top: 10px;">Not set yet.</div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin-top: 0;">Open Application Review</h3>
-        <p class="muted">Jump straight to the Application Pack review screen by Booking ID.</p>
-
-        <label for="bookingId">Booking ID</label>
-        <input id="bookingId" placeholder="e.g., 101" inputmode="numeric" />
-
-        <div class="row" style="margin-top: 12px;">
-          <button class="btn-primary" id="btnOpenReview">Open Review</button>
-        </div>
-
-        <div class="muted" style="margin-top: 10px;">
-          Tip: this uses <code>operator-review.html?bookingId=...</code>
-        </div>
-      </div>
-
-      <div class="card">
+<div class="card">
         <h3 style="margin-top: 0;">Walkthrough Data Controls</h3>
-        <p class="muted">
-          <b>Reset</b> restores bookings from your baseline.<br/>
-          <b>Refresh Baseline</b> overwrites the baseline using current bookings (use this right before a demo once your dataset is perfect).
-        </p>
+        <p class="muted">Use these controls to prepare or restore the walkthrough dataset before a demonstration.</p>
 
         <div class="divider"></div>
 
@@ -88,7 +54,7 @@
 <!-- PHASE20C_DEMO_TIGHTEN: Control Panel Boatie Setup button -->
 <div style="margin-top:10px;">
   <a href="/profile.html" style="display:inline-block;padding:10px 12px;border:1px solid #ccc;border-radius:10px;text-decoration:none;">
-    Boatie Setup (Profile &amp; Vessel)
+    Boatie Setup
   </a>
 </div>
 
@@ -114,7 +80,6 @@
     </div>
 
     <div class="demo-footer">
-      <div style="margin-top: 10px;">BoatiesMate Presenter Console</div>
     </div>
   </div>
 
