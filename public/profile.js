@@ -174,13 +174,18 @@ function apiBase() {
         const formData = new FormData();
         formData.append('documentFile', input.files[0]);
 
-        await fetchJson(`${apiBase()}/api/vessel-documents/${id}/file`, {
-          method: 'POST',
-          body: formData
-        });
+        try {
+          const result = await fetchJson(`${apiBase()}/api/vessel-documents/${id}/file`, {
+            method: 'POST',
+            body: formData
+          });
 
-        showStatus('ok', 'Evidence uploaded.');
-        await reloadAll();
+          showStatus('ok', 'Evidence uploaded.' + (result && result.file && result.file.url ? ' File: ' + result.file.url : ''));
+          await reloadAll();
+        } catch (err) {
+          showStatus('error', 'Evidence upload failed: ' + (err && err.message ? err.message : String(err)));
+          alert('Evidence upload failed: ' + (err && err.message ? err.message : String(err)));
+        }
       });
     });
 
