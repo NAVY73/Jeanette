@@ -817,7 +817,11 @@ router.post(
 
     const { reason } = req.body || {};
         // Hard gate: suitability + approved-conflicts must pass at approval time
-        const vessel = vessels.find(v => Number(v.id) === Number(booking.vesselId));
+        const liveVessels = readJson('vessels.json', vessels);
+        const profileVessel = readJson('vesselProfile.json', null);
+        const vessel = (Array.isArray(liveVessels) ? liveVessels : [])
+          .find(v => Number(v.id) === Number(booking.vesselId))
+          || (profileVessel && Number(profileVessel.id) === Number(booking.vesselId) ? profileVessel : null);
         const mooring = moorings.find(m => Number(m.id) === Number(booking.mooringId));
     
         if (!vessel) return res.status(400).json({ error: 'Booking has invalid vesselId' });
