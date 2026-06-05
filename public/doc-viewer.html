@@ -58,8 +58,8 @@
   <div id="missingWrap" class="card" style="display:none;">
     <div class="bad">Document not available</div>
     <p class="muted" style="margin-bottom:0;">
-      This document is not present as a static PDF in the demo build yet.
-      Phase 8 is read-only; uploads and enforcement are Phase 9.
+      Uploaded compliance evidence should appear here when available.
+      Live uploaded compliance documents enabled.
     </p>
     <p class="muted" style="margin-top:10px; margin-bottom:0;">
       If this is expected (e.g., Shore Power Lead Test), the operator can still proceed with the rest of the Application Pack.
@@ -89,46 +89,45 @@
     const missingWrap = document.getElementById("missingWrap");
     const frame = document.getElementById("pdfFrame");
 
-    // Map backend doc keys -> our static filename prefixes
-    const DOC_PREFIX = {
-      insurance: "insurance",
-      ewof: "ewof",
-      registration: "registration",
-      boat_registration: "registration",
-      rego: "registration",
-      // Known-but-not-yet-provided PDFs (falls back)
-      shore_power_lead_test: null
-    };
-
-    function buildFilePath(docKey, vesselId) {
-      const prefix = Object.prototype.hasOwnProperty.call(DOC_PREFIX, docKey) ? DOC_PREFIX[docKey] : null;
-      if (!prefix) return null;
-      if (!vesselId) return null;
-      return `/compliance-docs/${encodeURIComponent(prefix)}-vessel-${encodeURIComponent(vesselId)}.pdf`;
+    function normalizeKey(v) {
+      return String(v || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
     }
 
-    const file = buildFilePath(doc, vesselId);
-    document.getElementById("filePath").textContent = file || "—";
+    fetch("/api/vessel-documents?vesselId=" + encodeURIComponent(vesselId))
+      .then(r => r.json())
+      .then(docs => {
+        const wanted = normalizeKey(doc);
 
-    if (!file) {
-      statusLine.textContent = "No static file mapped for this document type (fallback shown).";
-      statusLine.className = "bad";
-      missingWrap.style.display = "block";
-    } else {
-      fetch(file, { method: "HEAD" })
-        .then((res) => {
-          if (!res.ok) throw new Error(String(res.status));
-          statusLine.textContent = "File found.";
-          statusLine.className = "ok";
-          viewerWrap.style.display = "block";
-          frame.src = file;
-        })
-        .catch(() => {
-          statusLine.textContent = "File missing (fallback shown).";
+        const found = (docs || []).find(d => {
+          return normalizeKey(d.type) === wanted;
+        });
+
+        if (!found || !found.file || !found.file.url) {
+          document.getElementById("filePath").textContent = "—";
+          statusLine.textContent = "Uploaded document unavailable.";
           statusLine.className = "bad";
           missingWrap.style.display = "block";
-        });
-    }
+          return;
+        }
+
+        const file = found.file.url;
+
+        document.getElementById("filePath").textContent = file;
+
+        statusLine.textContent = "Uploaded compliance document loaded.";
+        statusLine.className = "ok";
+
+        viewerWrap.style.display = "block";
+        frame.src = file;
+      })
+      .catch(err => {
+        console.error(err);
+        statusLine.textContent = "Unable to load uploaded compliance document.";
+        statusLine.className = "bad";
+        missingWrap.style.display = "block";
+      });
   </script>
 </body>
 </html>

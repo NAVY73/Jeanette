@@ -92,8 +92,8 @@ button[type="submit"], .btn-primary { font-weight: 700; padding: 12px 16px; bord
 <body>
 <!-- TEMP_PRESENTER_BACKLINK -->
 <div style="position:fixed;top:12px;right:12px;z-index:9999;">
-  <a href="/demo-home.html" style="display:inline-block;padding:10px 12px;border-radius:10px;background:#ffffff;border:1px solid #0b5d7a;text-decoration:none;font-weight:700;">
-    ← Presenter Console
+  <a href="/demo-home.html" title="Presenter Console" style="display:inline-block;padding:4px 8px;border-radius:999px;background:#f8fafc;border:1px solid #cbd5e1;text-decoration:none;font-weight:700;font-size:11px;color:#64748b;letter-spacing:.04em;">
+    PC
   </a>
 </div>
 
@@ -104,8 +104,20 @@ button[type="submit"], .btn-primary { font-weight: 700; padding: 12px 16px; bord
 
 <!-- PHASE20C_DEMO_TIGHTEN: Manage Profile & Vessel -->
 <div style="margin: 10px 0 14px 0;">
-  <a href="/profile.html" style="display:inline-block;padding:10px 12px;border:1px solid #ccc;border-radius:10px;text-decoration:none;">
-    Manage Profile &amp; Vessel
+  <a href="/profile.html" style="
+    display:inline-block;
+    padding:11px 16px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:700;
+    letter-spacing:.01em;
+    background:#0f766e;
+    color:#ffffff;
+    border:1px solid #0f766e;
+    box-shadow:0 3px 10px rgba(15,118,110,.18);
+    transition:all .15s ease;
+  ">
+    ← Manage Profile &amp; Vessel
   </a>
 </div>
 
@@ -117,7 +129,7 @@ button[type="submit"], .btn-primary { font-weight: 700; padding: 12px 16px; bord
         src="/boatiesmate-secondary-long-ocean.png"
         alt="BoatiesMate"
       />
-      <span class="role-pill role-pill--boatie">Boatie</span>
+      <!-- Boatie role pill removed for cleaner customer booking presentation -->
     </div>
   </header>
 
@@ -130,7 +142,15 @@ button[type="submit"], .btn-primary { font-weight: 700; padding: 12px 16px; bord
   </div>
 
   <div class="card">
-    <div><strong>Owner & Vessel Verified</strong></div>
+    <div class="ready-to-book-panel" style="display:block !important;padding:14px 16px !important;border:1px solid #b7e4c7 !important;background:#f0fdf4 !important;border-radius:14px !important;margin:12px 0 !important;color:#14532d !important;">
+      <div style="display:flex !important;align-items:flex-start !important;gap:10px !important;">
+        <div style="font-size:18px !important;line-height:1 !important;color:#15803d !important;">✓</div>
+        <div style="display:block !important;">
+          <div style="display:block !important;font-weight:800 !important;color:#14532d !important;">Ready to Book</div>
+          <div style="display:block !important;font-size:13px !important;color:#166534 !important;margin-top:2px !important;">Profile, vessel and compliance records verified.</div>
+        </div>
+      </div>
+    </div>
     <div class="muted" id="identityText" hidden></div>
   </div>
 

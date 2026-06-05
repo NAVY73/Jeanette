@@ -341,9 +341,15 @@ function buildApplicationPack(booking) {
 // Phase 5: Decision Intelligence (for Application Pack)
 // ===============================
 function computeDecisionIntelForBooking(booking, allBookings) {
-  // Use the same data sets already loaded at top of file: vessels, moorings
-  const vessel = vessels.find(v => Number(v.id) === Number(booking.vesselId));
-  const mooring = moorings.find(m => Number(m.id) === Number(booking.mooringId));
+  // Owners/vessels/moorings may be created or updated after server start.
+  // Decision Intelligence must evaluate against current JSON, not stale startup arrays.
+  const liveVessels = readJson('vessels.json', vessels);
+  const liveMoorings = readJson('moorings.json', moorings);
+
+  const vessel = (Array.isArray(liveVessels) ? liveVessels : vessels)
+    .find(v => Number(v.id) === Number(booking.vesselId));
+  const mooring = (Array.isArray(liveMoorings) ? liveMoorings : moorings)
+    .find(m => Number(m.id) === Number(booking.mooringId));
 
   if (!vessel) {
     return { status: "UNKNOWN", reasons: ["Booking has invalid vesselId (cannot evaluate)."] };
@@ -795,8 +801,8 @@ router.post(
 
     const { reason } = req.body || {};
         // Hard gate: suitability + approved-conflicts must pass at approval time
-        const vessel = vessels.find(v => v.id === booking.vesselId);
-        const mooring = moorings.find(m => m.id === booking.mooringId);
+        const vessel = vessels.find(v => Number(v.id) === Number(booking.vesselId));
+        const mooring = moorings.find(m => Number(m.id) === Number(booking.mooringId));
     
         if (!vessel) return res.status(400).json({ error: 'Booking has invalid vesselId' });
         if (!mooring) return res.status(400).json({ error: 'Booking has invalid mooringId' });

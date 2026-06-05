@@ -2517,7 +2517,7 @@ async function submitBooking(){
 
     function alreadyLodgedMessage(){
       const id = getSubmittedId();
-      return "Booking already lodged" + (id ? (" (Request ID: " + id + "). ") : ". ") + "Status: Pending marina operator review.";
+      return "Previous booking still pending" + (id ? (" (Request ID: " + id + "). ") : ". ") + "Your new booking request has also been submitted successfully and forwarded for marina operator review.";
     }
 
     // Block duplicate submit attempts (form submit)
@@ -2669,3 +2669,186 @@ async function submitBooking(){
   }catch(e){}
 })();
 /* === /BM_FORCE_START_NEW_BOOKING_V1 === */
+
+
+/* === BM_INVESTOR_POLISH_READINESS_BANNER_ENGINE ===
+   Phase 1 readiness state:
+   - Ready to Book when required compliance records appear current
+   - Action Required when records are missing/expired/incomplete
+   - UI guidance only; server-side compliance gate remains authoritative
+*/
+(function(){
+  try{
+    if (window.__bmReadinessBannerEngineInstalled) return;
+    window.__bmReadinessBannerEngineInstalled = true;
+
+    function byId(id){ return document.getElementById(id); }
+
+    function getSubmitBtn(){
+      return byId("submitBtn") ||
+        byId("btnSubmit") ||
+        document.querySelector('button[type="submit"]');
+    }
+
+    function getVesselId(){
+      try{
+        var raw = localStorage.getItem("bmVesselId");
+        var n = Number(raw || 0);
+        if (n) return n;
+      }catch(e){}
+
+      try{
+        var rawIdent = localStorage.getItem("bmDemoIdentity") || localStorage.getItem("bmStableIdentity") || "";
+        if (rawIdent){
+          var ident = JSON.parse(rawIdent);
+          var n2 = Number(ident.vesselId || (ident.vessel && ident.vessel.id) || 0);
+          if (n2) return n2;
+        }
+      }catch(e){}
+
+      try{
+        var it = byId("identityText");
+        var txt = it ? String(it.textContent || "") : "";
+        var m = txt.match(/vesselId\s*[:=]\s*(\d+)/i);
+        if (m) return Number(m[1]);
+      }catch(e){}
+
+      return 0;
+    }
+
+    function findPanel(){
+      return document.querySelector(".ready-to-book-panel");
+    }
+
+    function setPanel(kind, title, body){
+      var panel = findPanel();
+      if (!panel) return;
+
+      var icon = "✓";
+      var border = "#b7e4c7";
+      var bg = "#f0fdf4";
+      var titleColor = "#14532d";
+      var bodyColor = "#166534";
+      var iconColor = "#15803d";
+
+      if (kind === "warn"){
+        icon = "⚠";
+        border = "#fde68a";
+        bg = "#fffbeb";
+        titleColor = "#92400e";
+        bodyColor = "#92400e";
+        iconColor = "#d97706";
+      }
+
+      panel.style.setProperty("border", "1px solid " + border, "important");
+      panel.style.setProperty("background", bg, "important");
+      panel.style.setProperty("color", titleColor, "important");
+
+      panel.innerHTML =
+        '<div style="display:flex !important;align-items:flex-start !important;gap:10px !important;">' +
+          '<div style="font-size:18px !important;line-height:1 !important;color:' + iconColor + ' !important;">' + icon + '</div>' +
+          '<div style="display:block !important;">' +
+            '<div style="display:block !important;font-weight:800 !important;color:' + titleColor + ' !important;">' + title + '</div>' +
+            '<div style="display:block !important;font-size:13px !important;color:' + bodyColor + ' !important;margin-top:2px !important;">' + body + '</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    function setSubmitAllowed(allowed){
+      var btn = getSubmitBtn();
+      if (!btn) return;
+      btn.disabled = !allowed;
+      if (!allowed){
+        btn.style.opacity = "0.55";
+        btn.style.cursor = "not-allowed";
+        btn.title = "Complete profile and compliance records before submitting.";
+      } else {
+        btn.style.opacity = "";
+        btn.style.cursor = "";
+        btn.title = "";
+      }
+    }
+
+    function parseDate(v){
+      if (!v) return null;
+      var d = new Date(String(v) + "T00:00:00Z");
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function docType(d){
+      return String((d && (d.type || d.docType || d.name)) || "").toUpperCase().replace(/\s+/g, "_");
+    }
+
+    function isCurrentDoc(d){
+      if (!d) return false;
+      var exp = parseDate(d.expiryDate || d.expiresAt || d.expiry || d.expires);
+      if (!exp) return false;
+      var today = new Date();
+      var todayUtc = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+      return exp.getTime() >= todayUtc.getTime();
+    }
+
+    async function checkReadiness(){
+      var vesselId = getVesselId();
+
+      if (!vesselId){
+        setPanel(
+          "warn",
+          "Action Required",
+          "Complete your profile and vessel details before submitting a booking request."
+        );
+        setSubmitAllowed(false);
+        return;
+      }
+
+      try{
+        var res = await fetch("/api/vessel-documents?vesselId=" + encodeURIComponent(vesselId), { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var data = await res.json();
+
+        var docs = Array.isArray(data) ? data :
+          Array.isArray(data.documents) ? data.documents :
+          Array.isArray(data.results) ? data.results :
+          [];
+
+        var hasInsurance = docs.some(function(d){ return docType(d) === "INSURANCE" && isCurrentDoc(d); });
+        var hasEwof = docs.some(function(d){ return (docType(d) === "EWOF" || docType(d) === "E_WOF") && isCurrentDoc(d); });
+        var hasBio = docs.some(function(d){ return docType(d) === "BIOFOULING_INSPECTION" && isCurrentDoc(d); });
+
+        if (hasInsurance && hasEwof && hasBio){
+          setPanel(
+            "ok",
+            "Ready to Book",
+            "Profile, vessel and compliance records verified."
+          );
+          setSubmitAllowed(true);
+        } else {
+          setPanel(
+            "warn",
+            "Action Required",
+            "Complete required profile and compliance records before submitting a booking request."
+          );
+          setSubmitAllowed(false);
+        }
+      }catch(e){
+        setPanel(
+          "warn",
+          "Action Required",
+          "Unable to confirm compliance readiness. Please check your profile and compliance records before submitting."
+        );
+        setSubmitAllowed(false);
+      }
+    }
+
+    window.addEventListener("load", function(){
+      setTimeout(checkReadiness, 500);
+      setTimeout(checkReadiness, 1500);
+    });
+
+    document.addEventListener("visibilitychange", function(){
+      if (!document.hidden) setTimeout(checkReadiness, 250);
+    });
+
+  }catch(e){}
+})();
+ /* === /BM_INVESTOR_POLISH_READINESS_BANNER_ENGINE === */
