@@ -347,7 +347,32 @@ try{
       const t = await r.text();
       if (!r.ok){
         bmTrace("SUBMIT: failed HTTP " + r.status);
-        setDiag("Marina options: (submit error) " + t.slice(0,160));
+
+        let errData = null;
+        try { errData = t ? JSON.parse(t) : null; } catch(e) {}
+
+        function moneyMessage(msg){
+          return String(msg || "").replace(/5000000/g, "NZ$5,000,000");
+        }
+
+        const issueLines = [];
+        if (errData && Array.isArray(errData.blockingIssues)) {
+          errData.blockingIssues.forEach(function(issue){
+            if (!issue) return;
+            let msg = issue.message || issue.error || issue.code || "Compliance requirement not met.";
+            if (issue.type === "INSURANCE" && String(msg).indexOf("not compliant") >= 0) {
+              msg = "Insurance cover must be at least NZ$5,000,000.";
+            }
+            issueLines.push("• " + moneyMessage(msg));
+          });
+        }
+
+        const mainMsg = issueLines.length
+          ? "Booking cannot be submitted:\n" + issueLines.join("\n")
+          : "Submit failed: " + moneyMessage((errData && (errData.message || errData.error)) || ("HTTP " + r.status));
+
+        setMsg(mainMsg);
+        setDiag("Marina options: (submit error) " + (t || "").slice(0,160));
         return;
       }
       let out;
