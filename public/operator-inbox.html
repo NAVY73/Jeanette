@@ -16,7 +16,95 @@
     .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-top: 12px; }
     .muted { color: #666; font-size: 12px; }
     .pill { display: inline-block; padding: 3px 8px; border: 1px solid #ccc; border-radius: 999px; font-size: 12px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 14px;
+      background:#fff;
+      border:1px solid #dbe4ee;
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 8px 24px rgba(15,23,42,.06);
+    }
+
+    thead {
+      background:#f8fafc;
+    }
+
+    thead th {
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color:#64748b;
+      font-weight:700;
+      padding:14px 12px;
+      border-bottom:1px solid #e2e8f0;
+    }
+
+    tbody tr {
+      transition:background .15s ease;
+    }
+
+    tbody tr:hover {
+      background:#f8fbff;
+    }
+
+    tbody td {
+      padding:14px 12px;
+      border-bottom:1px solid #eef2f7;
+      vertical-align:top;
+    }
+
+    tbody tr:last-child td {
+      border-bottom:none;
+    }
+
+    .card {
+      border:1px solid #dbe4ee;
+      border-radius:16px;
+      padding:16px;
+      margin-top:14px;
+      background:#fff;
+      box-shadow:0 6px 20px rgba(15,23,42,.04);
+    }
+
+    .pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.02em;
+      border:1px solid #cbd5e1;
+      background:#fff;
+    }
+
+    .pill-ok {
+      border-color:#86efac;
+      background:#f0fdf4;
+      color:#166534;
+    }
+
+    .pill-warn {
+      border-color:#fde68a;
+      background:#fffbeb;
+      color:#92400e;
+    }
+
+    .pill-bad {
+      border-color:#fecaca;
+      background:#fef2f2;
+      color:#991b1b;
+    }
+
+    .pill-neutral {
+      border-color:#cbd5e1;
+      background:#f8fafc;
+      color:#475569;
+    }
     th, td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; vertical-align: top; }
     th { background: #fafafa; }
     tr:hover { background: #fcfcfc; }
@@ -29,17 +117,382 @@
     .pill-warn { border-color: #9a6a00; color: #9a6a00; }
     .pill-bad { border-color: #b00020; color: #b00020; }
     .pill-neutral { border-color: #666; color: #666; }
-  </style>
+
+    .bookingQueueCard {
+      margin-top:14px;
+      padding:18px;
+      border:1px solid #dbe4ee;
+      border-radius:18px;
+      background:#fff;
+      box-shadow:0 10px 30px rgba(15,23,42,.07);
+    }
+
+    .bookingQueueTop {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      padding-bottom:14px;
+      border-bottom:1px solid #eef2f7;
+    }
+
+    .bookingQueueTitle a {
+      color:#0b2d4d;
+      font-size:18px;
+      font-weight:900;
+      text-decoration:none;
+    }
+
+    .bookingQueueSub {
+      margin-top:4px;
+      color:#64748b;
+      font-size:12px;
+    }
+
+    .bookingQueueActions {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .bookingQueueGrid {
+      display:grid;
+      grid-template-columns:1.15fr 1.2fr 1fr 1.35fr 1.2fr;
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .bookingQueueField {
+      min-width:0;
+    }
+
+    .bookingQueueLabel {
+      margin-bottom:6px;
+      color:#64748b;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+    }
+
+    .bookingQueueValue {
+      color:#0f172a;
+      font-size:14px;
+      font-weight:800;
+      line-height:1.35;
+    }
+
+    .bookingQueueDecision {
+      padding-left:14px;
+      border-left:1px solid #e2e8f0;
+    }
+
+    @media (max-width: 900px) {
+      .bookingQueueTop {
+        flex-direction:column;
+      }
+      .bookingQueueActions {
+        justify-content:flex-start;
+      }
+      .bookingQueueGrid {
+        grid-template-columns:1fr;
+      }
+      .bookingQueueDecision {
+        padding-left:0;
+        border-left:none;
+      }
+    }
+
+  
+    .opsSidebar {
+      border:1px solid #dbe4ee;
+      border-radius:18px;
+      background:#ffffff;
+      padding:16px;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    .opsSidebarTitle {
+      margin:0 0 12px 0;
+      font-size:17px;
+      font-weight:900;
+      color:#0b2d4d;
+    }
+
+    .opsField {
+      margin-bottom:12px;
+    }
+
+    .opsField label {
+      display:block;
+      margin-bottom:7px;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      color:#64748b;
+    }
+
+    .opsSidebar select,
+    .opsSidebar input {
+      width:100%;
+      border:1px solid #cbd5e1;
+      border-radius:12px;
+      padding:11px 12px;
+      font-size:14px;
+      background:#fff;
+      color:#0f172a;
+      box-sizing:border-box;
+    }
+
+    .opsSidebar .muted {
+      font-size:12px;
+      line-height:1.45;
+      color:#64748b;
+    }
+
+    .opsActions {
+      display:flex;
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .opsPrimaryBtn {
+      flex:1;
+      background:#0b2d4d;
+      border:1px solid #0b2d4d;
+      color:#fff;
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 8px 18px rgba(11,45,77,.18);
+    }
+
+    .opsSecondaryBtn {
+      background:#fff;
+      border:1px solid #cbd5e1;
+      color:#0b2d4d;
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+
+    .operatorLoginPanel {
+      border:1px solid #dbe4ee !important;
+      border-radius:18px !important;
+      background:#fff;
+      padding:18px !important;
+      margin:12px 0 10px 0 !important;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    .operatorLoginTitle {
+      margin:0 0 12px 0;
+      font-size:17px;
+      font-weight:900;
+      color:#0b2d4d;
+    }
+
+    .operatorLoginGrid {
+      display:grid !important;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:end !important;
+    }
+
+    .operatorLoginPanel label {
+      display:block;
+      margin:0 0 7px 0 !important;
+      font-size:11px;
+      font-weight:900 !important;
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      color:#64748b;
+    }
+
+    .operatorLoginPanel select,
+    .operatorLoginPanel input {
+      border:1px solid #cbd5e1;
+      border-radius:12px;
+      padding:10px 11px !important;
+      font-size:14px;
+      background:#fff;
+      color:#0f172a;
+      box-sizing:border-box;
+    }
+
+    .operatorLoginButtons {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+      align-items:center;
+    }
+
+    .operatorMiniBtn {
+      min-height:34px;
+      padding:7px 11px !important;
+      border-radius:999px !important;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .operatorPrimaryMini {
+      background:#0b2d4d !important;
+      border:1px solid #0b2d4d !important;
+      color:#fff !important;
+      box-shadow:0 6px 14px rgba(11,45,77,.16);
+    }
+
+    .operatorSecondaryMini {
+      background:#fff !important;
+      border:1px solid #cbd5e1 !important;
+      color:#0b2d4d !important;
+    }
+
+
+    .bookingSectionHeader {
+      margin-top:8px;
+      padding:14px 18px;
+      border:1px solid #dbe4ee;
+      border-radius:18px;
+      background:#fff;
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    .bookingSectionTitle {
+      font-size:18px;
+      font-weight:900;
+      color:#0b2d4d;
+    }
+
+    .bookingSectionSub {
+      margin-top:4px;
+      color:#64748b;
+      font-size:12px;
+    }
+
+
+    /* Investor polish overrides: balance inbox header panels */
+    #leftPanel {
+      max-width:none !important;
+    }
+
+    .operatorLoginPanel {
+      min-height:245px;
+      box-sizing:border-box;
+    }
+
+    .opsSidebar {
+      padding:14px !important;
+      box-sizing:border-box;
+    }
+
+    .opsSidebarTitle {
+      margin-bottom:10px !important;
+    }
+
+    .opsField {
+      margin-bottom:10px !important;
+    }
+
+    .bookingSectionHeader {
+      margin-top:6px !important;
+    }
+
+    .decisionActionBlock {
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:5px;
+      padding:8px 10px;
+      border:1px solid #e2e8f0;
+      border-radius:14px;
+      background:#f8fafc;
+    }
+
+    .decisionActionLabel {
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:#64748b;
+    }
+
+    .decisionActionNote {
+      font-size:12px;
+      font-weight:700;
+      color:#475569;
+      line-height:1.25;
+    }
+
+
+    /* Investor polish overrides: matched action blocks + login height */
+    .operatorLoginPanel {
+      min-height:330px !important;
+    }
+
+    .reviewActionBtn {
+      display:flex !important;
+      flex-direction:column;
+      align-items:flex-start !important;
+      justify-content:center !important;
+      gap:6px;
+      min-width:150px;
+      min-height:78px;
+      background:#0b2d4d !important;
+      color:#fff !important;
+      text-decoration:none !important;
+      font-weight:900 !important;
+      border-radius:14px !important;
+      padding:9px 12px !important;
+      box-shadow:0 8px 18px rgba(11,45,77,.18);
+      box-sizing:border-box;
+    }
+
+    .reviewActionLabel {
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      opacity:.78;
+    }
+
+    .reviewActionStatus {
+      display:inline-flex;
+      align-items:center;
+      border:1px solid rgba(255,255,255,.45);
+      border-radius:999px;
+      padding:3px 8px;
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      background:rgba(255,255,255,.12);
+    }
+
+    .reviewActionText {
+      font-size:13px;
+      font-weight:900;
+      line-height:1.1;
+    }
+
+</style>
 </head>
 <body class="operator-inbox">
 <!-- TEMP_PRESENTER_BACKLINK -->
 <div style="position:fixed;top:12px;right:12px;z-index:99999;">
-  <a href="/demo-home.html" style="display:inline-block;padding:10px 12px;border-radius:10px;background:#ffffff;border:2px solid #0b5d7a;text-decoration:none;font-weight:700;color:#0b5d7a;">
-    ← Presenter Console
+  <a href="/demo-home.html" title="Presenter Console" style="display:inline-block;padding:4px 8px;border-radius:999px;background:#f8fafc;border:1px solid #cbd5e1;text-decoration:none;font-weight:700;font-size:11px;color:#64748b;letter-spacing:.04em;">
+    PC
   </a>
 </div>
 
-  <div class="demo-badge">BoatiesMate – Operations Queue</div>
   <div class="muted" style="margin-bottom:12px;">
   </div>
   <header class="brand-header">
@@ -49,13 +502,13 @@
         src="/boatiesmate-secondary-long-ocean.png"
         alt="BoatiesMate"
       />
-      <span class="role-pill role-pill--operator">Operator</span>
+      <!-- Operator role pill removed for cleaner operator workflow presentation -->
     </div>
   </header>
   
   <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
     <h2 style="margin:0;">Operator Inbox</h2>
-    <button id="btnInboxReset" type="button" class="btn-secondary">Reset Demo</button>
+    <!-- Reset Demo removed from Operator Inbox; use Presenter Console for demo reset/baseline controls. -->
   </div>
 
 
@@ -68,32 +521,44 @@
 
       
 
-      <div style="border:1px solid #ddd; padding:12px; border-radius:8px; margin:12px 0;">
+      <div class="operatorLoginPanel">
         
 
-        <div style="font-weight:bold; margin-bottom:6px;">Operator Login</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; position:relative;">
+        <div class="operatorLoginTitle">Operator Login</div>
+        <div style="position:relative;">
 
-<label style="display:block; margin-top:12px; font-weight:bold;">Quick Select Operator</label>
-<div style="display:flex; gap:10px; align-items:center;">
-  <select id="quickOperator" style="flex:1; min-width:220px; padding:8px;">
+<label>Quick Select Operator</label>
+<div class="operatorLoginGrid">
+  <select id="quickOperator">
     <option value="">-- choose --</option>
     <option value="operator@gulfharbour.example">Gulf Harbour (marinaId 2)</option>
     <option value="operator@westhaven.example">Westhaven (marinaId 3)</option>
   </select>
-  <button id="applyOperatorBtn" class="btn-secondary" type="button">Use</button>
+  <button id="applyOperatorBtn" class="operatorMiniBtn operatorSecondaryMini" type="button">Use</button>
 </div>
 
-          <input id="loginEmail" type="email" style="flex:1; min-width:220px;" value="operator@gulfharbour.example" />
-          <input id="loginPassword" type="password" style="width:180px;" value="letmein123" />          
-          <button id="loginBtn" type="button" class="btn-primary"
-          style="background: var(--ocean, #0b2d4d); border:1px solid var(--ocean, #0b2d4d); color:#fff; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer; white-space:nowrap;">
-          Log In & Load Bookings
-        </button>        
-          <button id="clearTokenBtn" type="button" class="btn-secondary">Clear Token</button>
+          <div style="display:none;">
+            <input id="loginEmail" type="email" value="operator@gulfharbour.example" />
+            <input id="loginPassword" type="password" value="letmein123" />
+          </div>
+
+          <div class="operatorLoginButtons">
+            <button id="loginBtn" type="button" class="operatorMiniBtn operatorPrimaryMini">Load Inbox</button>
+            <button id="clearTokenBtn" type="button" class="operatorMiniBtn operatorSecondaryMini" style="display:none;" hidden aria-hidden="true">Clear Token</button>
+          </div>
         </div>
-        <div id="loginStatus" style="margin-top:8px;" class="muted"></div>
+        <div id="loginStatus" style="display:none;" hidden aria-hidden="true"></div>
       </div>
+
+      <div class="bookingSectionHeader">
+        <div>
+          <div class="bookingSectionTitle">Booking Queue</div>
+          <div class="bookingSectionSub">Pending requests prioritised for operator review.</div>
+          <div id="bookingQueueCount" class="bookingSectionSub" style="margin-top:6px;font-weight:800;color:#0b2d4d;"></div>
+        </div>
+      </div>
+
+      <div id="tableWrap" style="margin-top:10px;"></div>
 
       <div>
 
@@ -111,7 +576,8 @@
     
         </div>
 
-        <div id="rightFilters" style="flex:0 0 360px; max-width:360px; margin-left:auto;">
+        <div id="rightFilters" class="opsSidebar" style="flex:0 0 360px; max-width:360px; margin-left:auto;">
+          <div class="opsSidebarTitle">Queue Controls</div>
 <div style="display:none;" hidden aria-hidden="true">
         <label>API Base URL</label>
         <input id="apiBase" value="" placeholder="" />
@@ -119,7 +585,7 @@
       </div>
 
           <div style="margin-top:12px;"></div>
-<div>
+<div class="opsField">
         <label>Status</label>
         <select id="status">
           <option value="pending" selected>pending</option>
@@ -131,7 +597,7 @@
         <!-- PHASE17_SORT_CONTROLS -->
 
         <div style="margin-top:12px;"></div>
-        <div>
+        <div class="opsField">
           <label>Sort By</label>
           <select id="sortBy">
             <option value="start" selected>Start date</option>
@@ -141,7 +607,7 @@
         </div>
 
         <div style="margin-top:12px;"></div>
-        <div>
+        <div class="opsField">
           <label>Sort Direction</label>
           <select id="sortDir">
             <option value="asc" selected>Ascending (earliest first)</option>
@@ -151,21 +617,21 @@
         
 
       <div class="form-row" id="dateRangeRow" style="margin-top:14px; display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
-  <div class="col" style="flex:1; min-width:220px;">
+  <div class="col opsField" style="flex:1; min-width:220px;">
     <label>From (optional)</label>
     <input id="from" type="date" />
   </div>
 
-  <div class="col" style="flex:1; min-width:220px;">
+  <div class="col opsField" style="flex:1; min-width:220px;">
     <label>To (optional)</label>
     <input id="to" type="date" />
   </div>
 
   <div class="col" style="flex:0 0 auto; min-width:auto; display:flex; gap:10px; align-items:flex-end;">
-    <button id="btnLoad" type="button" class="btn-primary" style="background: var(--ocean, #0b2d4d); border:1px solid var(--ocean, #0b2d4d); color:#fff; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer; white-space:nowrap;">
+    <button id="btnLoad" type="button" class="opsPrimaryBtn">
       Load Inbox
     </button>
-    <button id="btnResetFilters" type="button" style="background:#fff; border:1px solid #cbd5e1; color:#0b2d4d; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer; white-space:nowrap;">
+    <button id="btnResetFilters" type="button" class="opsSecondaryBtn">
       Reset Filters
     </button>
   </div>
@@ -173,8 +639,8 @@
 </div>
 </div>
 
-    <div id="authMsg" class="muted" style="margin-top:10px;"></div>
-    <div id="tableWrap" style="margin-top:10px;"></div>
+    <div id="authMsg" style="display:none !important;" hidden aria-hidden="true" class="muted" style="margin-top:10px;"></div>
+
     <div id="jsonWrap" style="margin-top:10px; display:none;"></div>
   </div>
 
@@ -636,7 +1102,9 @@ try {
 
 
     if (!results.length) {
-      wrap.innerHTML = "<div class='muted' style='margin-top:10px;'>No bookings found for the selected filters.</div>";
+      var countEl = qs("bookingQueueCount");
+      if (countEl) countEl.textContent = "No bookings found for the selected filters.";
+      wrap.innerHTML = "";
       return;
     }
 
@@ -677,12 +1145,21 @@ try {
 
       // Booking cell: link the booking number for ALL statuses (view access)
       var bookingCell =
-        "<div><strong><a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "'>#" + esc(b.id) + "</a></strong></div>"
-        + "<div class='muted'>OwnerId: " + esc(b.ownerId) + "</div>";
+        "<div style='font-size:15px;font-weight:800;'><a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "' style='color:#0b2d4d;text-decoration:none;'>Booking #" + esc(b.id) + "</a></div>"
+        + "<div class='muted' style='margin-top:4px;font-size:12px;'>Owner reference: " + esc(b.ownerId) + "</div>";
 
-      var datesCell = "<div>" + esc(b.startDate) + " \u2192 " + esc(b.endDate) + "</div>";
-      var vesselCell = "<div>" + esc(vesselName) + "</div><div class='muted'>(id: " + esc(b.vesselId) + ")</div>";
-      var mooringMarinaCell = "<div>" + esc(mooringName) + "</div><div class='muted'>" + esc(marinaName) + "</div>";
+      var datesCell =
+        "<div style='font-weight:700;color:#0f172a;'>" + esc(b.startDate) + "</div>"
+        + "<div class='muted' style='font-size:12px;margin:2px 0;'>to</div>"
+        + "<div style='font-weight:700;color:#0f172a;'>" + esc(b.endDate) + "</div>";
+
+      var vesselCell =
+        "<div style='font-weight:800;color:#0f172a;'>" + esc(vesselName) + "</div>"
+        + "<div class='muted' style='margin-top:4px;font-size:12px;'>Vessel reference: " + esc(b.vesselId) + "</div>";
+
+      var mooringMarinaCell =
+        "<div style='font-weight:700;color:#0f172a;'>" + esc(mooringName) + "</div>"
+        + "<div class='muted' style='margin-top:4px;font-size:12px;'>" + esc(marinaName) + "</div>";
 
       // Status pill: pending neutral, approved green, declined red
       var stClass = "pill-neutral";
@@ -694,8 +1171,8 @@ try {
 
       // Action column: pending-only (non-pending is visible but not actionable)
       var actionCell = (st === "pending")
-        ? "<a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "'>Open Application Pack \u2192</a>"
-        : "<span class='muted'>—</span>";
+        ? "<a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "' class='reviewActionBtn'><span class='reviewActionLabel'>Action</span><span class='reviewActionStatus'>" + esc(st) + "</span><span class='reviewActionText'>Review Pack →</span></a>"
+        : "<span class='muted'>Completed</span>";
 
       var intel = await fetchDecisionIntel(b.id);
       var intelText = decisionIntelLabel(intel);
@@ -724,25 +1201,36 @@ else if (intel && intel.reasons && intel.reasons.length) {
 // NOTE: warnings intentionally NOT shown in Inbox (demo polish)
 
 
-      var tr = document.createElement("tr");
-      tr.innerHTML = ""
-  + "<td>" + bookingCell + "</td>"
-  + "<td>" + datesCell + "</td>"
-  + "<td>" + vesselCell + "</td>"
-  + "<td><span class='pill pill-neutral'>" + esc(prefLabel(b.servicePreference)) + "</span></td>"
-  + "<td>" + mooringMarinaCell + "</td>"
-  + "<td>"
-  +   "<span class='pill " + esc(pillClass) + "' title='" + esc(reasonText) + "'>" + esc(intelText) + "</span>"
-  +   "<div class='muted'>" + esc(reasonText) + "</div>"
-  + "</td>"
-  + "<td>" + statusCell + "</td>"
-  + "<td class='right'>" + actionCell + "</td>";
+      var card = document.createElement("div");
+      card.className = "bookingQueueCard";
+      card.innerHTML = ""
+        + "<div class='bookingQueueTop'>"
+        + "  <div>"
+        + "    <div class='bookingQueueTitle'><a href='operator-review.html?bookingId=" + encodeURIComponent(b.id) + "'>Booking #" + esc(b.id) + "</a></div>"
+        + "    <div class='bookingQueueSub'>Owner reference: " + esc(b.ownerId) + "</div>"
+        + "  </div>"
+        + "  <div class='bookingQueueActions'>"
+        + "    <div class='decisionActionBlock'>"
+        + "      <div class='decisionActionLabel'>Decision Note</div>"
+        + "      <span class='pill " + esc(pillClass) + "' title='" + esc(reasonText) + "'>" + esc(intelText) + "</span>"
+        + "      <div class='decisionActionNote'>" + esc(reasonText) + "</div>"
+        + "    </div>"
+        +      actionCell
+        + "  </div>"
+        + "</div>"
+        + "<div class='bookingQueueGrid'>"
+        + "  <div class='bookingQueueField'><div class='bookingQueueLabel'>Dates</div><div class='bookingQueueValue'>" + esc(b.startDate) + " → " + esc(b.endDate) + "</div></div>"
+        + "  <div class='bookingQueueField'><div class='bookingQueueLabel'>Vessel</div><div class='bookingQueueValue'>" + esc(vesselName) + "</div><div class='bookingQueueSub'>Vessel reference: " + esc(b.vesselId) + "</div></div>"
+        + "  <div class='bookingQueueField'><div class='bookingQueueLabel'>Preference</div><span class='pill pill-neutral'>" + esc(prefLabel(b.servicePreference)) + "</span></div>"
+        + "  <div class='bookingQueueField'><div class='bookingQueueLabel'>Mooring / Marina</div><div class='bookingQueueValue'>" + esc(mooringName) + "</div><div class='bookingQueueSub'>" + esc(marinaName) + "</div></div>"
+        + "  <div class='bookingQueueField bookingQueueDecision'><div class='bookingQueueLabel'>Operator Flow</div><div class='bookingQueueValue'>Review application pack</div></div>"
+        + "</div>";
 
-      tbody.appendChild(tr);
+      wrap.appendChild(card);
     }
 
-    wrap.appendChild(table);
-    wrap.insertAdjacentHTML("beforeend", "<div class='muted' style='margin-top:8px;'>Showing " + esc(count) + " booking(s).</div>");
+    var countEl = qs("bookingQueueCount");
+    if (countEl) countEl.textContent = "Showing " + count + " booking(s).";
   }
 
   function renderJsonBox(obj) {

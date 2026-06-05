@@ -3,19 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>BoatiesMate – Operator Review</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 980px; margin: 0 auto; }
-    h2 { margin: 0 0 6px 0; }
-    .muted { color: #666; font-size: 13px; }
-    .row { display: grid; grid-template-columns: 220px 1fr; gap: 10px; align-items: start; margin-top: 10px; }
-    .k { font-weight: bold; }
-    input, button, textarea { padding: 8px; font-size: 14px; }
-    input, textarea { width: 100%; box-sizing: border-box; }
-    button { cursor: pointer; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; margin-top: 12px; }
-    .grid2 { display: grid; grid-template-columns: 180px 1fr; gap: 8px 12px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 24px;
+      max-width: 1120px;
+      margin: 0 auto;
+      background: #f5f7fa;
+      color: #1f2937;
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: #102a43;
+    }
+
+    .muted {
+      color: #5f6c7b;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 14px;
+      align-items: start;
+      margin-top: 14px;
+    }
+
+    .k {
+      font-weight: 700;
+      color: #243b53;
+    }
+
+    input, button, textarea {
+      padding: 10px 12px;
+      font-size: 14px;
+      border-radius: 10px;
+    }
+
+    textarea,
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      font-weight: 600;
+      transition: opacity .15s ease;
+    }
+
+    button:hover {
+      opacity: .92;
+    }
+
+    .btn-primary {
+      background: #0f766e;
+      color: white;
+      min-width: 180px;
+    }
+
+    .btn-decline {
+      background: #b42318;
+      color: white;
+      min-width: 140px;
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #1e293b;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #dbe2ea;
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 16px;
+      box-shadow: 0 1px 3px rgba(15,23,42,.06);
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 10px 16px;
+    }
 
     /* Pills (shared language with Inbox) */
     .pill { display: inline-block; padding: 3px 8px; border: 1px solid #ccc; border-radius: 999px; font-size: 12px; background: #f7f7f7; }
@@ -30,7 +112,16 @@
     .badge.err { background: #fde8ea; border: 1px solid #f5b8bf; color: #7f0015; }
     .badge.warn { background: #fff3e0; border: 1px solid #ffd59a; color: #7a4a00; }
 
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .actions {
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:flex-start;
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid #e5e7eb;
+}
     .right { text-align: right; }
     pre { background: #111; color: #eee; padding: 12px; border-radius: 10px; overflow: auto; font-size: 12px; }
     a { color: #2b5cab; text-decoration: none; }
@@ -84,13 +175,137 @@
   margin-right:6px;
 }
 
+
+/* OPERATOR_REVIEW_PAGE_SCOPED_POLISH */
+body.operator-review-page{
+  max-width:1120px !important;
+  margin:0 auto !important;
+  padding:26px !important;
+  background:#f3f6f9 !important;
+  color:#1f2937 !important;
+}
+
+body.operator-review-page h2{
+  font-size:30px !important;
+  line-height:1.15 !important;
+  margin:18px 0 16px !important;
+  color:#102a43 !important;
+}
+
+body.operator-review-page .card{
+  background:#ffffff !important;
+  border:1px solid #d9e2ec !important;
+  border-radius:18px !important;
+  padding:22px !important;
+  margin-top:18px !important;
+  box-shadow:0 8px 22px rgba(15,23,42,.07) !important;
+}
+
+body.operator-review-page .k{
+  color:#243b53 !important;
+  font-weight:700 !important;
+  letter-spacing:.01em !important;
+}
+
+body.operator-review-page .muted{
+  color:#62748a !important;
+  line-height:1.5 !important;
+}
+
+body.operator-review-page .row{
+  grid-template-columns:210px 1fr !important;
+  gap:16px !important;
+  margin-top:16px !important;
+}
+
+body.operator-review-page .grid2{
+  grid-template-columns:210px 1fr !important;
+  gap:12px 18px !important;
+}
+
+body.operator-review-page textarea,
+body.operator-review-page input{
+  border:1px solid #cbd5e1 !important;
+  border-radius:12px !important;
+  padding:12px !important;
+  background:#fff !important;
+  box-sizing:border-box !important;
+}
+
+body.operator-review-page .actions{
+  display:flex !important;
+  gap:12px !important;
+  justify-content:flex-start !important;
+  align-items:center !important;
+  margin-top:20px !important;
+  padding-top:18px !important;
+  border-top:1px solid #e5e7eb !important;
+}
+
+body.operator-review-page .actions button{
+  width:auto !important;
+  min-width:170px !important;
+  padding:12px 18px !important;
+  border-radius:12px !important;
+  font-weight:700 !important;
+  box-shadow:0 2px 6px rgba(15,23,42,.12) !important;
+}
+
+body.operator-review-page #approveBtn,
+body.operator-review-page #approveConditionalBtn{
+  background:#0f766e !important;
+  color:#ffffff !important;
+}
+
+body.operator-review-page #declineBtn{
+  background:#b42318 !important;
+  color:#ffffff !important;
+}
+
+body.operator-review-page #banner{
+  border-radius:16px !important;
+  padding:14px 16px !important;
+  background:#ffffff !important;
+  box-shadow:0 4px 14px rgba(15,23,42,.06) !important;
+}
+
+body.operator-review-page table{
+  background:#ffffff !important;
+  border-radius:14px !important;
+  overflow:hidden !important;
+}
+
+body.operator-review-page th{
+  background:#f8fafc !important;
+  color:#334155 !important;
+}
+
+body.operator-review-page td,
+body.operator-review-page th{
+  padding:11px 10px !important;
+}
+
+
+/* Investor polish: remove any orphan legacy artifact between decision banner and Booking ID */
+body.operator-review-page #banner + .card::before,
+body.operator-review-page #banner + .card > :first-child:empty {
+  display:none !important;
+}
+body.operator-review-page #appSummary {
+  display:none !important;
+  height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  overflow:hidden !important;
+}
+
 </style>
 
 </head>
-<body>
+<body class="operator-review-page">
   <div style="margin: 12px 0 14px;">
   </div>
-  <div class="demo-badge">BoatiesMate Prototype — Demo Mode<small>Phase 11</small></div>
   <header class="brand-header">
     <div class="brand-header__inner">
       <img
@@ -98,7 +313,7 @@
         src="/boatiesmate-secondary-long-ocean.png"
         alt="BoatiesMate"
       />
-      <span class="role-pill role-pill--operator">Operator</span>
+      <!-- Operator role pill removed for cleaner investor/operator presentation -->
     </div>
   </header>
   
@@ -115,10 +330,11 @@
     <table id="docsTable" style="width:100%; margin-top:10px; border-collapse: collapse; display:none;">
       <thead>
         <tr>
-          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Type</th>
-          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Status</th>
-          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Expires</th>
-          <th style="text-align:right; border-bottom:1px solid #eee; padding:8px;">Action</th>
+          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Requirement</th>
+          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Compliance Status</th>
+          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Expiry</th>
+          <th style="text-align:left; border-bottom:1px solid #eee; padding:8px;">Operational Notes</th>
+          <th style="text-align:right; border-bottom:1px solid #eee; padding:8px;">Evidence</th>
         </tr>
       </thead>
       <tbody id="docsTbody"></tbody>
@@ -130,16 +346,9 @@
     <div id="bannerBody"></div>
   </div>
 
-  <div class="card">
-    <div class="row" style="display:none;" hidden aria-hidden="true">
-      <div class="k">API Base URL</div>
-      <div>
-        <input id="apiBase" placeholder="" />
-...
-Tip: leave blank for hosted demos (defaults to <span class="pill">this site</span>).
-        </div>
-      </div>
-    </div>
+  
+  <div class="card" id="reviewLoadCard">
+    <input id="apiBase" type="hidden" value="" />
 
     <div class="row">
       <div class="k">Booking ID</div>
@@ -161,6 +370,7 @@ Tip: leave blank for hosted demos (defaults to <span class="pill">this site</spa
       <div id="decisionIntelBox" class="muted">Loading decision…</div>
     </div>
   </div>
+
 
   <div id="cardsArea" style="display:none;">
     <div class="card">
@@ -210,14 +420,51 @@ Tip: leave blank for hosted demos (defaults to <span class="pill">this site</spa
       </div>
     </div>
 
-    <div class="card">
-      <div class="k" style="margin-bottom:8px;">Application Details</div>
-      <div id="appSummary" class="app-summary"></div>
-      <pre id="rawJson">{}</pre>
-    </div>
+    <!-- Developer Application Details / raw JSON hidden for investor/operator view. -->
+    <div id="appSummary" class="app-summary" style="display:none !important;" hidden aria-hidden="true"></div>
+    <pre id="rawJson" style="display:none;">{}</pre>
   </div>
 
-  <script src="operator-review.js?v=phase11"></script>
+  
+<script id="forceCleanBannerToBookingId">
+(function(){
+  function clean(){
+    try {
+      var banner = document.getElementById("banner");
+      if (!banner) return;
+
+      var appSummary = document.getElementById("appSummary");
+      if (appSummary) {
+        appSummary.innerHTML = "";
+        appSummary.style.display = "none";
+        appSummary.hidden = true;
+      }
+
+      var firstCard = banner.nextElementSibling;
+      while (firstCard && !(firstCard.classList && firstCard.classList.contains("card"))) {
+        var doomed = firstCard;
+        firstCard = firstCard.nextElementSibling;
+        doomed.remove();
+      }
+
+      if (!firstCard) return;
+
+      var children = Array.from(firstCard.children);
+      for (var i = 0; i < children.length; i++) {
+        var el = children[i];
+        var txt = (el.innerText || "").trim();
+        if (txt.indexOf("Booking ID") >= 0) break;
+        if (el.id !== "apiBase") el.remove();
+      }
+    } catch(e) {}
+  }
+
+  document.addEventListener("DOMContentLoaded", clean);
+  window.addEventListener("load", function(){ setTimeout(clean, 50); setTimeout(clean, 300); });
+})();
+</script>
+
+  <script src="operator-review.js?v=document-helper-inline-20260602"></script>
 
 <script id="phase11BackTs">
 (function(){

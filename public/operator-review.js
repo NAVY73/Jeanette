@@ -25,6 +25,8 @@
         const s = String(t).toLowerCase();
         if (s.includes("insur")) return "insurance";
         if (s.includes("ewof") || s.includes("wof")) return "ewof";
+        if (s.includes("shore") || s.includes("power")) return "shore_power_lead_test";
+        if (s.includes("biofoul")) return "biofouling_inspection";
         if (s.includes("reg")) return "registration";
         return s;
       }
@@ -32,7 +34,8 @@
       var DEMO_DOC_META = {
         insurance: { status: "valid", expiresAt: "2026-08-01", fileName: "insurance.pdf" },
         ewof:      { status: "valid", expiresAt: "2026-04-15", fileName: "ewof.pdf" },
-        registration: { status: "valid", expiresAt: "2026-12-31", fileName: "registration.pdf" }
+        biofouling_inspection: { status: "valid", expiresAt: "2027-04-07", fileName: "biofouling.pdf" },
+        shore_power_lead_test: { status: "valid", expiresAt: "2027-03-29", fileName: "shore-power.pdf" }
       };      
 
       function pickDocUrl(doc, bookingId, vesselId) {
@@ -73,16 +76,30 @@
         return [];
       }
       
-      function renderComplianceDocuments(pack) {
+      async function renderComplianceDocuments(pack) {
         const emptyEl = document.getElementById("docsEmpty");
         const tableEl = document.getElementById("docsTable");
         const tbody = document.getElementById("docsTbody");
       
         if (!emptyEl || !tableEl || !tbody) return; // HTML block not present
       
-        const docs = extractDocumentsFromPack(pack);
+        let docs = extractDocumentsFromPack(pack);
         const bookingId = (pack && pack.booking && pack.booking.id) || (pack && pack.bookingId) || "";
         const vesselId = (pack && pack.vessel && pack.vessel.id) || (pack && pack.vesselId) || "";
+
+        try {
+          if (vesselId) {
+            const liveDocsRes = await fetch("/api/vessel-documents?vesselId=" + encodeURIComponent(vesselId));
+            if (liveDocsRes.ok) {
+              const liveDocs = await liveDocsRes.json();
+              if (Array.isArray(liveDocs) && liveDocs.length) {
+                docs = liveDocs;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Could not load live vessel documents for compliance table", e);
+        }
       
         tbody.innerHTML = "";
 
@@ -90,7 +107,7 @@
         const EXPECTED = [
           { key: "insurance", label: "Insurance" },
           { key: "ewof", label: "EWOF" },
-          { key: "registration", label: "Registration" },
+          { key: "biofouling_inspection", label: "Biofouling Inspection" },
           { key: "shore_power_lead_test", label: "Shore Power Lead Test" },
         ];
 
@@ -104,7 +121,7 @@
           function addSectionRow(title) {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-              <td colspan="4"
+              <td colspan="5"
                   style="padding:10px 8px;
                          border-bottom:1px solid #e9e9e9;
                          font-weight:bold;
@@ -113,13 +130,69 @@
               </td>
             `;
             tbody.appendChild(tr);
+          }
+
+          function assessDocStatus(doc, expiresRaw) {
+            const hasUploadedFile =
+              !!(doc && doc.file && doc.file.url);
+
+            const exp =
+              String(
+                expiresRaw ||
+                doc?.expiryDate ||
+                doc?.expiresAt ||
+                doc?.expiry ||
+                ""
+              ).trim();
+
+            if (!hasUploadedFile) {
+              return {
+                label: "NOT PROVIDED",
+                cls: "pill-bad",
+                note: "Evidence required before this record can be relied on."
+              };
+            }
+
+            if (exp && exp !== "—") {
+              const d = new Date(exp);
+
+              if (!isNaN(d.getTime())) {
+                const today = new Date();
+                today.setHours(0,0,0,0);
+
+                const days = Math.ceil((d - today) / 86400000);
+
+                if (days < 0) {
+                  return {
+                    label: "EXPIRED",
+                    cls: "pill-bad",
+                    note: "Renewal required before approval."
+                  };
+                }
+
+                if (days <= 30) {
+                  return {
+                    label: "EXPIRING SOON",
+                    cls: "pill-warn",
+                    note: "Acceptable for review, but renewal should be requested soon."
+                  };
+                }
+              }
+            }
+
+            return {
+              label: "VALID",
+              cls: "pill-ok",
+              note: "Uploaded evidence available for operator review."
+            };
           }          
 
         // Build lookup of docs by normalized key
         const byKey = new Map();
         (docs || []).forEach((d) => {
-          const k = normalizeDocType(d.type || d.docType || d.name);
-          if (k) byKey.set(k, d);
+          const inner = d && d.document ? d.document : d;
+          const k = normalizeDocType((d && d.type) || (inner && (inner.type || inner.docType || inner.name)));
+          if (k) byKey.set(k, inner || d);
         });
 
         // Build display list: expected first, then extras
@@ -163,7 +236,7 @@ const expectedList = displayDocs.slice(0, EXPECTED.length);
 const extraList = displayDocs.slice(EXPECTED.length);
 
 // ---- Expected documents ----
-addSectionRow("Expected documents");
+addSectionRow("Required Compliance Records");
 
 expectedList.forEach(({ label, doc }) => {
   const tr = document.createElement("tr");
@@ -173,28 +246,35 @@ expectedList.forEach(({ label, doc }) => {
 
   const statusRaw = doc.status || doc.state || demoMeta.status || "unknown";
   const expires =
-    doc.expiresAt || doc.expiry || doc.expires || demoMeta.expiresAt || "—";
+    doc.expiryDate || doc.expiresAt || doc.expiry || doc.expires || demoMeta.expiresAt || "—";
 
   if (!doc.fileName && !doc.filename && !doc.file && demoMeta.fileName) {
     doc.fileName = demoMeta.fileName;
   }
 
-  const url = pickDocUrl(doc, bookingId, vesselId);
+  const url = (doc.file && doc.file.url) || doc.fileUrl || doc.url || pickDocUrl(doc, bookingId, vesselId);
+
+  const docForAssessment = Object.assign({}, doc, {
+    file: doc.file || (url && url.startsWith("/uploads/") ? { url: url } : null)
+  });
+
+  const assessed = assessDocStatus(docForAssessment, expires);
 
   tr.innerHTML = `
     <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${label}</td>
-    <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${prettyStatus(statusRaw)}</td>
+    <td style="padding:8px; border-bottom:1px solid #f2f2f2;"><span class="pill ${assessed.cls}">${assessed.label}</span></td>
     <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${expires}</td>
+    <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${assessed.note}</td>
     <td style="padding:8px; border-bottom:1px solid #f2f2f2; text-align:right;">
-      <a href="${url}" target="_blank" rel="noopener noreferrer">View</a>
+      <a href="${url}" target="_blank" rel="noopener noreferrer">View Document</a><div class="muted" style="font-size:11px;margin-top:3px;">Opens in a new tab</div>
     </td>
   `;
   tbody.appendChild(tr);
 });
 
 // ---- Additional documents (only if present) ----
-if (extraList.length) {
-  addSectionRow("Additional documents");
+if (false && extraList.length) {
+  addSectionRow("Required Compliance Records");
 
   extraList.forEach(({ label, doc }) => {
     const tr = document.createElement("tr");
@@ -210,7 +290,7 @@ if (extraList.length) {
       doc.fileName = demoMeta.fileName;
     }
 
-    const url = pickDocUrl(doc, bookingId, vesselId);
+    const url = (doc.file && doc.file.url) || doc.fileUrl || doc.url || pickDocUrl(doc, bookingId, vesselId);
 
     tr.innerHTML = `
       <td style="padding:8px; border-bottom:1px solid #f2f2f2;">${label}</td>
@@ -537,54 +617,15 @@ function clearDeclineReasonInput() {
     .replace(/'/g,"&#39;");
 }
 
-function renderAppSummary(pack){
-  try {
-    var el = qs("appSummary");
-    if (!el) return;
-    pack = pack || {};
-    var b = pack.booking || {};
-    var o = pack.owner || {};
-    var v = pack.vessel || {};
-
-    function pill(label, value){
-      if (value==null || value==="") return "";
-      return '<span class="pill"><span class="label">' + bmEscHtml(label) + ':</span>' + bmEscHtml(value) + '</span>';
-    }
-
-    var start = b.startDate || "";
-    var end = b.endDate || "";
-    var dates = (start && end) ? (start + " → " + end) : (start || end || "");
-
-    var html = '';
-    html += '<div class="row">'
-      + pill("Booking", b.id)
-      + pill("Status", b.status)
-      + pill("Service", b.servicePreference)
-      + pill("Dates", dates)
-      + pill("Mooring ID", b.mooringId)
-      + '</div>';
-
-    html += '<div class="row">'
-      + pill("Boatie", o.fullName)
-      + pill("Email", o.email)
-      + pill("Phone", o.phone)
-      + pill("Emergency", o.emergencyContactName ? (o.emergencyContactName + (o.emergencyContactPhone ? " ("+o.emergencyContactPhone+")" : "")) : "")
-      + '</div>';
-
-    html += '<div class="row">'
-      + pill("Vessel", v.name)
-      + pill("Type", v.type)
-      + pill("LOA (m)", v.lengthOverallM)
-      + pill("Beam (m)", v.beamM)
-      + pill("Draft (m)", v.draftM)
-      + pill("Shore Power", (v.hasShorePower===true ? "Yes" : (v.hasShorePower===false ? "No" : "")))
-      + pill("Rego", v.registrationNumber)
-      + '</div>';
-
-    el.innerHTML = html || "";
-  } catch(e) {
-    // fail open: never break operator-review
+function renderAppSummary(pack) {
+  var el = qs("appSummary");
+  if (el) {
+    el.innerHTML = "";
+    el.style.display = "none";
+    el.setAttribute("hidden", "hidden");
+    el.setAttribute("aria-hidden", "true");
   }
+  return;
 }
 
     // ---------- Main ----------
