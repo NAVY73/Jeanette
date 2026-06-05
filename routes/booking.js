@@ -69,6 +69,14 @@ function getTodayUtcMidnight() {
 
 function computeDocCompliance(doc, rule, todayUtc) {
   const issues = [];
+
+  if (!doc || !doc.file || !doc.file.url) {
+    return {
+      state: 'missing',
+      issues: [{ code: 'NO_EVIDENCE', message: 'Compliance evidence has not been uploaded.' }]
+    };
+  }
+
   const expiry = parseDateYmd(doc.expiryDate);
 
   if (!expiry) {
@@ -204,6 +212,14 @@ function daysBetween(a, b) {
 
 function computeDocCompliance(doc, rule, todayUtc) {
   const issues = [];
+
+  if (!doc || !doc.file || !doc.file.url) {
+    return {
+      state: 'missing',
+      issues: [{ code: 'NO_EVIDENCE', message: 'Compliance evidence has not been uploaded.' }]
+    };
+  }
+
   const expiry = parseDateYmd(doc.expiryDate);
 
   if (!expiry) {

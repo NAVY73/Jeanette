@@ -388,6 +388,10 @@ function apiBase() {
       return (docs || []).find(d => normaliseType(d.type) === type);
     }
 
+    function hasEvidence(doc) {
+      return !!(doc && doc.file && doc.file.url);
+    }
+
     function isExpired(doc) {
       if (!doc || !doc.expiryDate) return false;
       const expiry = new Date(doc.expiryDate);
@@ -432,6 +436,11 @@ function apiBase() {
 
       if (!req.doc) {
         missing.push(req.label + (req.note ? " — " + req.note : ""));
+        return;
+      }
+
+      if (!hasEvidence(req.doc)) {
+        missing.push(req.label + " evidence file" + (req.note ? " — " + req.note : ""));
         return;
       }
 
