@@ -46,7 +46,7 @@
       try { demoAdminKey = localStorage.getItem("bmDemoAdminKey") || ""; } catch (e) {}
 
       if (!demoAdminKey) {
-        demoAdminKey = window.prompt("Enter demo admin key");
+        demoAdminKey = window.prompt("Enter demo admin key. This is the Render DEMO_ADMIN_KEY. It will be saved in this browser for future resets.");
         if (!demoAdminKey) {
           els.resetStatus.textContent = "Reset cancelled.";
           return;
@@ -68,6 +68,13 @@
       try { data = JSON.parse(text); } catch (e) {}
 
       if (!res.ok) {
+        if (res.status === 403) {
+          try { localStorage.removeItem("bmDemoAdminKey"); } catch (e) {}
+          els.resetStatus.textContent =
+            "Reset failed: saved demo key is missing or incorrect. Click Reset Demo again and re-enter the Render DEMO_ADMIN_KEY.";
+          return;
+        }
+
         els.resetStatus.textContent =
           "Reset failed (HTTP " + res.status + "). " +
           (data && data.message ? data.message : text);
@@ -82,6 +89,12 @@
       try { localStorage.removeItem("bmDemoLastSubmittedBookingId"); } catch (e) {}
       try { localStorage.removeItem("bmDemoIdentity"); } catch (e) {}
       try { localStorage.removeItem("bmStableIdentity"); } catch (e) {}
+      try { localStorage.removeItem("bmOwnerId"); } catch (e) {}
+      try { localStorage.removeItem("bmVesselId"); } catch (e) {}
+      try { localStorage.removeItem("BM_OWNER_ID"); } catch (e) {}
+      try { localStorage.removeItem("BM_VESSEL_ID"); } catch (e) {}
+      try { localStorage.removeItem("profileOwnerId"); } catch (e) {}
+      try { localStorage.removeItem("profileVesselId"); } catch (e) {}
 
       setTimeout(function () {
         nav("/operator-inbox.html");
