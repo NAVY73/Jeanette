@@ -462,6 +462,26 @@
     card.appendChild(dates);
     card.appendChild(reference);
 
+    if (String(booking.status || "").toLowerCase() === "approved") {
+      const paymentAction = document.createElement("div");
+      paymentAction.className = "payment-action";
+
+      const paymentRequired = document.createElement("span");
+      paymentRequired.className = "payment-required";
+      paymentRequired.textContent = "Payment Required";
+
+      const paymentLink = document.createElement("a");
+      paymentLink.className = "payment-link";
+      paymentLink.href =
+        "/booking-payment.html?bookingId=" +
+        encodeURIComponent(booking.id);
+      paymentLink.textContent = "View Booking Payment →";
+
+      paymentAction.appendChild(paymentRequired);
+      paymentAction.appendChild(paymentLink);
+      card.appendChild(paymentAction);
+    }
+
     return card;
   }
 
