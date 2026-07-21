@@ -463,6 +463,36 @@ router.get('/', (req, res) => {
   });
 });
 
+// GET /api/bookings/mine
+// Read-only boatie view, filtered to the supplied owner and vessel.
+router.get('/mine', (req, res) => {
+  const ownerId = Number(req.query.ownerId || 0);
+  const vesselId = Number(req.query.vesselId || 0);
+
+  if (!ownerId || !vesselId) {
+    return res.status(400).json({
+      error: 'ownerId and vesselId are required'
+    });
+  }
+
+  const results = bookings
+    .filter((booking) =>
+      Number(booking.ownerId) === ownerId &&
+      Number(booking.vesselId) === vesselId
+    )
+    .sort((a, b) => {
+      const aDate = new Date(a.startDate).getTime();
+      const bDate = new Date(b.startDate).getTime();
+      return (Number.isNaN(aDate) ? 0 : aDate) -
+             (Number.isNaN(bDate) ? 0 : bDate);
+    });
+
+  return res.json({
+    count: results.length,
+    results
+  });
+});
+
 // Inbox with filters + sorting
 router.get('/inbox', requireAuth, requireRole('marina_operator'), (req, res) => {
   const { status = 'pending', from, to, mooringId, ownerId, vesselId, sort = 'startDate', dir = 'asc', limit = '50' } = req.query;
