@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BoatiesMate – Operations Centre</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    :root {
+      --navy: #0b2d4d;
+      --ocean: #0f766e;
+      --ink: #172b35;
+      --muted: #667b84;
+      --line: #dce6e8;
+      --surface: #ffffff;
+      --background: #f4f8f8;
+      --green-bg: #ecfdf3;
+      --green-text: #166534;
+      --amber-bg: #fff8e6;
+      --amber-text: #92400e;
+      --red-bg: #fff1f2;
+      --red-text: #991b1b;
+      --blue-bg: #eff6ff;
+      --blue-text: #1e40af;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--ink);
+      font-family: Arial, sans-serif;
+    }
+
+    .pc-link {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 1000;
+      display: inline-block;
+      padding: 5px 9px;
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .04em;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 26px 0 46px;
+    }
+
+    .brand-header {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+    }
+
+    .brand-header img {
+      width: min(330px, 80%);
+      height: auto;
+    }
+
+    .brand-header h1 {
+      margin: 22px 0 6px;
+      color: var(--navy);
+      font-size: clamp(30px, 5vw, 45px);
+      line-height: 1.05;
+    }
+
+    .tagline {
+      margin: 0;
+      color: var(--ocean);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .context-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #f8fbfb;
+    }
+
+    .context-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .context-value {
+      margin-top: 3px;
+      color: var(--navy);
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .demo-badge {
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: var(--blue-bg);
+      color: var(--blue-text);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .section {
+      margin-top: 22px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 9px 28px rgba(15, 23, 42, .05);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .section h2 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 25px;
+    }
+
+    .section-intro {
+      margin: 7px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .why-wrap {
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .why-button {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 1px solid #bad1d3;
+      border-radius: 50%;
+      background: #f2fbfb;
+      color: var(--ocean);
+      cursor: help;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .why-card {
+      position: absolute;
+      top: 37px;
+      right: 0;
+      z-index: 50;
+      width: min(330px, 82vw);
+      padding: 15px;
+      border: 1px solid #b8ced0;
+      border-radius: 15px;
+      background: #ffffff;
+      color: var(--ink);
+      box-shadow: 0 14px 35px rgba(15, 23, 42, .16);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity .15s ease, transform .15s ease;
+    }
+
+    .why-wrap:hover .why-card,
+    .why-wrap:focus-within .why-card {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .why-card strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--navy);
+    }
+
+    .why-card p {
+      margin: 8px 0 0;
+      color: #536970;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .brief-grid {
+      display: grid;
+      grid-template-columns: 1.35fr .9fr;
+      gap: 18px;
+    }
+
+    .brief-story {
+      padding: 20px;
+      border: 1px solid #cfe0e1;
+      border-radius: 18px;
+      background: #f7fbfb;
+    }
+
+    .brief-date {
+      margin-bottom: 11px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .brief-story h3 {
+      margin: 0 0 10px;
+      color: var(--navy);
+      font-size: 22px;
+    }
+
+    .brief-story p {
+      margin: 0 0 12px;
+      line-height: 1.65;
+    }
+
+    .brief-readiness {
+      padding: 17px;
+      border-radius: 17px;
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+
+    .brief-readiness span {
+      display: block;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .brief-readiness strong {
+      display: block;
+      margin-top: 7px;
+      font-size: 22px;
+    }
+
+    .brief-readiness p {
+      margin: 9px 0 0;
+      line-height: 1.45;
+    }
+
+    .action-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .action-card {
+      display: grid;
+      grid-template-columns: 105px 1fr 190px;
+      gap: 16px;
+      align-items: start;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #ffffff;
+    }
+
+    .impact {
+      display: inline-block;
+      padding: 7px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .impact-high {
+      background: var(--red-bg);
+      color: var(--red-text);
+    }
+
+    .impact-medium {
+      background: var(--amber-bg);
+      color: var(--amber-text);
+    }
+
+    .action-main h3 {
+      margin: 0 0 7px;
+      color: var(--navy);
+      font-size: 18px;
+    }
+
+    .action-main p {
+      margin: 4px 0;
+      color: #536970;
+      line-height: 1.45;
+    }
+
+    .action-value {
+      padding-left: 15px;
+      border-left: 1px solid var(--line);
+    }
+
+    .action-value-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .value-pill {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--blue-bg);
+      color: var(--blue-text);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 13px;
+    }
+
+    .health-card {
+      min-height: 150px;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #ffffff;
+    }
+
+    .health-card h3 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 16px;
+    }
+
+    .health-state {
+      display: inline-block;
+      margin-top: 13px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .health-green {
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+
+    .health-amber {
+      background: var(--amber-bg);
+      color: var(--amber-text);
+    }
+
+    .health-card p {
+      margin: 13px 0 0;
+      color: #5e737b;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .placeholder-note {
+      margin-top: 16px;
+      padding: 13px 15px;
+      border: 1px dashed #a9bfc2;
+      border-radius: 14px;
+      background: #fbfdfd;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 900px) {
+      .brief-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .action-card {
+        grid-template-columns: 1fr;
+      }
+
+      .action-value {
+        padding-left: 0;
+        padding-top: 13px;
+        border-top: 1px solid var(--line);
+        border-left: none;
+      }
+
+      .health-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .page {
+        width: min(100% - 18px, 1180px);
+        padding-top: 15px;
+      }
+
+      .brand-header,
+      .section {
+        padding: 17px;
+        border-radius: 17px;
+      }
+
+      .context-bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .health-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="pc-link" href="/demo-home.html" title="Presenter Console">PC</a>
+
+  <main class="page">
+    <header class="brand-header">
+      <img src="/boatiesmate-secondary-long-ocean.png" alt="BoatiesMate" />
+      <h1>Operations Centre</h1>
+      <p class="tagline">Run today's marina. Improve tomorrow's marina.</p>
+
+      <div class="context-bar">
+        <div>
+          <div class="context-label">Selected Marina</div>
+          <div id="marinaContext" class="context-value">Gulf Harbour Marina</div>
+        </div>
+        <span class="demo-badge">Phase 22A · Demonstration Shell</span>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title-row">
+            <h2>Operations Brief</h2>
+            <div class="why-wrap">
+              <button class="why-button" type="button" aria-label="Why the Operations Brief matters">i</button>
+              <div class="why-card">
+                <strong>Why This Matters</strong>
+                <p><b>Purpose:</b> Provide a concise operational overview before the working day begins.</p>
+                <p><b>Question:</b> What do I need to know before I start today?</p>
+                <p><b>Value:</b> Reduces the time required to understand priorities and improves operational readiness.</p>
+              </div>
+            </div>
+          </div>
+          <p class="section-intro">The operational story for today, presented in the order that supports confident decisions.</p>
+        </div>
+      </div>
+
+      <div class="brief-grid">
+        <article class="brief-story">
+          <div id="briefDate" class="brief-date">Monday, 27 July 2026 · Updated 7:15 am</div>
+          <h3>Good morning</h3>
+          <p><b>What do I need to know?</b> Today's operation is expected to be healthy, with steady visitor activity and sufficient capacity across most berth categories.</p>
+          <p><b>What do I need to do?</b> Three operational matters require attention. One compliance issue may affect an upcoming arrival.</p>
+          <p><b>What should I be thinking about?</b> Visitor demand for 10–12 metre berths remains strong and should continue to be monitored.</p>
+          <p><b>Recommended priority:</b> Review the compliance issue before commencing routine booking approvals.</p>
+        </article>
+
+        <aside class="brief-readiness">
+          <span>Readiness</span>
+          <strong>Healthy</strong>
+          <p>Today's operation appears manageable. One matter requires attention before the next scheduled arrival.</p>
+        </aside>
+      </div>
+
+      <div class="placeholder-note">
+        Demonstration wording only. Phase 22B will connect this briefing to current and synthetic operational data.
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title-row">
+            <h2>Action Centre</h2>
+            <div class="why-wrap">
+              <button class="why-button" type="button" aria-label="Why the Action Centre matters">i</button>
+              <div class="why-card">
+                <strong>Why This Matters</strong>
+                <p><b>Purpose:</b> Identify and prioritise operational actions requiring attention.</p>
+                <p><b>Question:</b> What is preventing today's operation from running as smoothly as possible?</p>
+                <p><b>Value:</b> Reduces operational friction by ensuring the highest-impact work is addressed first.</p>
+              </div>
+            </div>
+          </div>
+          <p class="section-intro">Actions are ordered by operational impact, not simply by when they entered the system.</p>
+        </div>
+      </div>
+
+      <div class="action-list">
+        <article class="action-card">
+          <div>
+            <span class="impact impact-high">High Impact</span>
+          </div>
+          <div class="action-main">
+            <h3>Resolve compliance issue before arrival</h3>
+            <p><b>Why this matters:</b> Insurance evidence requires attention before the vessel's scheduled arrival.</p>
+            <p><b>Recommended action:</b> Contact the vessel owner and request updated evidence.</p>
+            <p><b>Consequence if ignored:</b> The booking may not be able to proceed.</p>
+          </div>
+          <div class="action-value">
+            <div class="action-value-label">Value Created</div>
+            <span class="value-pill">Prevents Loss</span>
+          </div>
+        </article>
+
+        <article class="action-card">
+          <div>
+            <span class="impact impact-medium">Medium Impact</span>
+          </div>
+          <div class="action-main">
+            <h3>Review two pending booking requests</h3>
+            <p><b>Why this matters:</b> Suitable capacity remains available for the requested dates.</p>
+            <p><b>Recommended action:</b> Complete the booking reviews before midday.</p>
+            <p><b>Consequence if ignored:</b> Available capacity may remain unnecessarily idle.</p>
+          </div>
+          <div class="action-value">
+            <div class="action-value-label">Value Created</div>
+            <span class="value-pill">Increases Capacity</span>
+          </div>
+        </article>
+
+        <article class="action-card">
+          <div>
+            <span class="impact impact-medium">Medium Impact</span>
+          </div>
+          <div class="action-main">
+            <h3>Confirm tomorrow's berth departure</h3>
+            <p><b>Why this matters:</b> The berth is required for another approved arrival.</p>
+            <p><b>Recommended action:</b> Confirm the current vessel's departure time.</p>
+            <p><b>Consequence if ignored:</b> A berth allocation conflict may arise.</p>
+          </div>
+          <div class="action-value">
+            <div class="action-value-label">Value Created</div>
+            <span class="value-pill">Prevents Loss</span>
+          </div>
+        </article>
+      </div>
+
+      <div class="placeholder-note">
+        The Operations Brief will display a maximum of four priorities. The full Action Centre may contain additional actions.
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title-row">
+            <h2>Marina Health</h2>
+            <div class="why-wrap">
+              <button class="why-button" type="button" aria-label="Why Marina Health matters">i</button>
+              <div class="why-card">
+                <strong>Why This Matters</strong>
+                <p><b>Purpose:</b> Provide a balanced assessment of the marina's current operational condition.</p>
+                <p><b>Question:</b> How healthy is today's operation?</p>
+                <p><b>Value:</b> Identifies emerging risks early and directs management attention toward areas requiring improvement.</p>
+              </div>
+            </div>
+          </div>
+          <p class="section-intro">Each state will ultimately be supported by an explicit threshold, rationale and improvement action.</p>
+        </div>
+      </div>
+
+      <div class="health-grid">
+        <article class="health-card">
+          <h3>Bookings</h3>
+          <span class="health-state health-green">Healthy</span>
+          <p>Booking workload is within the proposed response target.</p>
+        </article>
+
+        <article class="health-card">
+          <h3>Occupancy</h3>
+          <span class="health-state health-green">Strong</span>
+          <p>Capacity remains available while visitor utilisation is healthy.</p>
+        </article>
+
+        <article class="health-card">
+          <h3>Compliance</h3>
+          <span class="health-state health-amber">Attention</span>
+          <p>One upcoming arrival has an unresolved evidence requirement.</p>
+        </article>
+
+        <article class="health-card">
+          <h3>Payments</h3>
+          <span class="health-state health-green">Healthy</span>
+          <p>No material payment backlog is affecting today's operation.</p>
+        </article>
+
+        <article class="health-card">
+          <h3>Maintenance</h3>
+          <span class="health-state health-green">Stable</span>
+          <p>No current maintenance activity is materially reducing capacity.</p>
+        </article>
+      </div>
+
+      <div class="placeholder-note">
+        Demonstration states only. Phase 22C will define the Green, Amber and Red calculation rules.
+      </div>
+    </section>
+  </main>
+
+  <script src="/operations-centre.js"></script>
+</body>
+</html>

@@ -2,6 +2,7 @@
   const els = {
     btnBoatie: document.getElementById("btnBoatie"),
     btnInbox: document.getElementById("btnInbox"),
+    btnOperationsCentre: document.getElementById("btnOperationsCentre"),
     resetConfirm: document.getElementById("resetConfirm"),
     btnReset: document.getElementById("btnReset"),
     btnResetHelp: document.getElementById("btnResetHelp"),
@@ -23,6 +24,10 @@
 
   els.btnInbox.addEventListener("click", function () {
     nav("/operator-inbox.html");
+  });
+
+  els.btnOperationsCentre.addEventListener("click", function () {
+    nav("/operations-centre.html");
   });
 
   els.resetConfirm.addEventListener("input", function () {
