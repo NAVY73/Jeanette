@@ -457,7 +457,7 @@
           <div class="context-label">Selected Marina</div>
           <div id="marinaContext" class="context-value">Gulf Harbour Marina</div>
         </div>
-        <span class="demo-badge">Phase 22A · Demonstration Shell</span>
+        <span class="demo-badge">Phase 22C · Live Summary Engine</span>
       </div>
     </header>
 
@@ -484,21 +484,21 @@
         <article class="brief-story">
           <div id="briefDate" class="brief-date">Monday, 27 July 2026 · Updated 7:15 am</div>
           <h3>Good morning</h3>
-          <p><b>What do I need to know?</b> Today's operation is expected to be healthy, with steady visitor activity and sufficient capacity across most berth categories.</p>
-          <p><b>What do I need to do?</b> Three operational matters require attention. One compliance issue may affect an upcoming arrival.</p>
-          <p><b>What should I be thinking about?</b> Visitor demand for 10–12 metre berths remains strong and should continue to be monitored.</p>
-          <p><b>Recommended priority:</b> Review the compliance issue before commencing routine booking approvals.</p>
+          <p id="briefKnow"><b>What do I need to know?</b> Today's operation is expected to be healthy, with steady visitor activity and sufficient capacity across most berth categories.</p>
+          <p id="briefDo"><b>What do I need to do?</b> Three operational matters require attention. One compliance issue may affect an upcoming arrival.</p>
+          <p id="briefThink"><b>What should I be thinking about?</b> Visitor demand for 10–12 metre berths remains strong and should continue to be monitored.</p>
+          <p id="briefPriority"><b>Recommended priority:</b> Review the compliance issue before commencing routine booking approvals.</p>
         </article>
 
         <aside class="brief-readiness">
           <span>Readiness</span>
-          <strong>Healthy</strong>
-          <p>Today's operation appears manageable. One matter requires attention before the next scheduled arrival.</p>
+          <strong id="readinessState">Healthy</strong>
+          <p id="readinessText">Today's operation appears manageable. One matter requires attention before the next scheduled arrival.</p>
         </aside>
       </div>
 
       <div class="placeholder-note">
-        Demonstration wording only. Phase 22B will connect this briefing to current and synthetic operational data.
+        Live booking, movement and occupancy information is generated from the Operations Summary Engine. Historical trends will follow once the Operations History dataset exists.
       </div>
     </section>
 
@@ -521,7 +521,7 @@
         </div>
       </div>
 
-      <div class="action-list">
+      <div id="actionList" class="action-list">
         <article class="action-card">
           <div>
             <span class="impact impact-high">High Impact</span>
@@ -598,14 +598,14 @@
       <div class="health-grid">
         <article class="health-card">
           <h3>Bookings</h3>
-          <span class="health-state health-green">Healthy</span>
-          <p>Booking workload is within the proposed response target.</p>
+          <span id="bookingHealthState" class="health-state health-green">Healthy</span>
+          <p id="bookingHealthText">Booking workload is within the proposed response target.</p>
         </article>
 
         <article class="health-card">
           <h3>Occupancy</h3>
-          <span class="health-state health-green">Strong</span>
-          <p>Capacity remains available while visitor utilisation is healthy.</p>
+          <span id="occupancyHealthState" class="health-state health-green">Strong</span>
+          <p id="occupancyHealthText">Capacity remains available while visitor utilisation is healthy.</p>
         </article>
 
         <article class="health-card">
@@ -628,11 +628,12 @@
       </div>
 
       <div class="placeholder-note">
-        Demonstration states only. Phase 22C will define the Green, Amber and Red calculation rules.
+        Bookings and Occupancy are live. Compliance, Payments and Maintenance remain demonstration states until those operational data streams are connected.
       </div>
     </section>
   </main>
 
+  <script src="/operations-summary.js"></script>
   <script src="/operations-centre.js"></script>
 </body>
 </html>
