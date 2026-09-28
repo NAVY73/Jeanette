@@ -436,7 +436,143 @@
     }
   }
 
+  function isBayswaterPresentation() {
+    const params = new URLSearchParams(window.location.search);
+    return String(params.get("marina") || "").toLowerCase() === "bayswater";
+  }
+
+  function renderBayswaterPresentation() {
+    if (elements.marinaContext) {
+      elements.marinaContext.textContent = "Bayswater Marina";
+    }
+
+    if (elements.briefDate) {
+      const now = new Date();
+      const formattedDate = new Intl.DateTimeFormat("en-NZ", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }).format(now);
+
+      elements.briefDate.textContent =
+        `${formattedDate} · Bayswater concept operational briefing`;
+    }
+
+    setLabelledText(
+      elements.briefKnow,
+      "What do I need to know?",
+      "Today's demonstration view brings berth availability, arrivals, departures and capacity visibility into one operational picture."
+    );
+
+    setLabelledText(
+      elements.briefDo,
+      "What do I need to do?",
+      "Review today's berth movements and identify suitable available capacity before confirming new short-term allocations."
+    );
+
+    setLabelledText(
+      elements.briefThink,
+      "What should I be thinking about?",
+      "Available capacity becomes more valuable when the operator can see not only which berths are vacant, but which vessel sizes they can accommodate and when they become available."
+    );
+
+    setLabelledText(
+      elements.briefPriority,
+      "Recommended priority:",
+      "Open the Bayswater Marina Berth View and review today's capacity and vessel movements."
+    );
+
+    if (elements.readinessState) {
+      elements.readinessState.textContent = "Concept View";
+    }
+
+    if (elements.readinessText) {
+      elements.readinessText.textContent =
+        "Bayswater presentation mode uses demonstration berth and movement data for operator discussion.";
+    }
+
+    if (elements.actionList) {
+      elements.actionList.innerHTML = `
+        <article class="action-card">
+          <div>
+            <span class="impact impact-high">Capacity</span>
+          </div>
+          <div class="action-main">
+            <h3>Review today's available berth capacity</h3>
+            <p><b>Why this matters:</b> Vacant capacity has greater operational and commercial value when suitable vessel sizes can be identified quickly.</p>
+            <p><b>Recommended action:</b> Open the Marina Berth View and review available berths by size.</p>
+            <p><b>Consequence if ignored:</b> Suitable short-term capacity may remain unused.</p>
+          </div>
+          <div class="action-value">
+            <div class="action-value-label">Value Created</div>
+            <span class="value-pill">Increases Capacity</span>
+          </div>
+        </article>
+
+        <article class="action-card">
+          <div>
+            <span class="impact impact-medium">Movements</span>
+          </div>
+          <div class="action-main">
+            <h3>Prepare for today's arrivals and departures</h3>
+            <p><b>Why this matters:</b> Movement visibility supports berth readiness and efficient turnaround.</p>
+            <p><b>Recommended action:</b> Review arriving and departing vessels against today's berth position.</p>
+            <p><b>Consequence if ignored:</b> Capacity may be temporarily understated or berth conflicts may arise.</p>
+          </div>
+          <div class="action-value">
+            <div class="action-value-label">Value Created</div>
+            <span class="value-pill">Reduces Friction</span>
+          </div>
+        </article>
+
+        <article class="action-card">
+          <div>
+            <span class="impact impact-medium">Opportunity</span>
+          </div>
+          <div class="action-main">
+            <h3>Identify short-term berth opportunities</h3>
+            <p><b>Why this matters:</b> Suitable vacant berths may support visitor or future trailer-sailor demand.</p>
+            <p><b>Recommended action:</b> Review appropriate vacant capacity and consider making selected berths available for short-term use.</p>
+            <p><b>Consequence if ignored:</b> Existing marina assets may remain underutilised.</p>
+          </div>
+          <div class="action-value">
+            <div class="action-value-label">Value Created</div>
+            <span class="value-pill">Creates Revenue</span>
+          </div>
+        </article>
+      `;
+    }
+
+    setHealthState(
+      elements.bookingHealthState,
+      "health-green",
+      "Visible"
+    );
+
+    if (elements.bookingHealthText) {
+      elements.bookingHealthText.textContent =
+        "Booking and berth demand can be brought together in one operator workflow.";
+    }
+
+    setHealthState(
+      elements.occupancyHealthState,
+      "health-green",
+      "Capacity Visible"
+    );
+
+    if (elements.occupancyHealthText) {
+      elements.occupancyHealthText.textContent =
+        "The concept berth board makes available capacity visible by berth and vessel size.";
+    }
+  }
+
   async function initialise() {
+    if (isBayswaterPresentation()) {
+      renderBayswaterPresentation();
+      return;
+    }
+
     const engine = window.BoatiesMateOperationsSummary;
 
     if (!engine || typeof engine.buildOperationsSummary !== "function") {
