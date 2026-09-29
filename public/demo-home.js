@@ -4,6 +4,7 @@
     btnInbox: document.getElementById("btnInbox"),
     btnOperationsCentre: document.getElementById("btnOperationsCentre"),
     btnBayswaterDemo: document.getElementById("btnBayswaterDemo"),
+    btnBayswaterBoatie: document.getElementById("btnBayswaterBoatie"),
     resetConfirm: document.getElementById("resetConfirm"),
     btnReset: document.getElementById("btnReset"),
     btnResetHelp: document.getElementById("btnResetHelp"),
@@ -33,6 +34,10 @@
 
   els.btnBayswaterDemo.addEventListener("click", function () {
     nav("/operations-centre.html?marina=bayswater");
+  });
+
+  els.btnBayswaterBoatie.addEventListener("click", function () {
+    nav("/bayswater-berths.html");
   });
 
   els.resetConfirm.addEventListener("input", function () {

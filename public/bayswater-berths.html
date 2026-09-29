@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bayswater Marina – Find a Berth | BoatiesMate</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #f5f7fa;
+      color: #172033;
+      font-family: Arial, sans-serif;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .pc {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 9999;
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 11px;
+      color: #64748b;
+      letter-spacing: .04em;
+    }
+
+    .brand {
+      background: #fff;
+      border: 1px solid #dde4ec;
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin-bottom: 18px;
+    }
+
+    .brand img {
+      max-width: 280px;
+      width: 100%;
+      height: auto;
+    }
+
+    .hero {
+      background: #fff;
+      border: 1px solid #dde4ec;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      color: #15375b;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .demo-note {
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: #fff8e6;
+      border: 1px solid #ecd89a;
+      border-radius: 10px;
+      color: #6f5a18;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #dde4ec;
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 19px;
+      color: #15375b;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #fff;
+    }
+
+    .match-summary {
+      margin-top: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #475569;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .dot.suitable { background: #2e9b61; }
+    .dot.too-small { background: #d8dee8; }
+    .dot.unavailable { background: #edf0f4; border: 1px solid #c8d0db; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(280px, .85fr);
+      gap: 18px;
+    }
+
+    .map-card {
+      background: #fff;
+      border: 1px solid #dde4ec;
+      border-radius: 16px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .map-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .map-title h2 {
+      margin: 0 0 5px;
+      color: #15375b;
+    }
+
+    .water {
+      min-width: 760px;
+      background: #eaf6fb;
+      border: 1px solid #c4e0ec;
+      border-radius: 16px;
+      padding: 22px;
+    }
+
+    .finger-row {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .finger-label {
+      font-size: 20px;
+      font-weight: 800;
+      color: #15375b;
+    }
+
+    .berths {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(70px, 1fr));
+      gap: 7px;
+    }
+
+    .berth {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 4px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      min-height: 52px;
+      cursor: default;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+
+    .berth small {
+      display: block;
+      margin-top: 3px;
+      font-weight: 500;
+      font-size: 10px;
+    }
+
+    .berth.suitable {
+      background: #dff3e7;
+      border-color: #66ad80;
+      color: #155f36;
+      cursor: pointer;
+    }
+
+    .berth.suitable:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0,0,0,.09);
+    }
+
+    .berth.too-small {
+      background: #eef1f5;
+      color: #8993a3;
+    }
+
+    .berth.unavailable {
+      background: #f8f9fb;
+      color: #a1a8b3;
+      opacity: .65;
+    }
+
+    .details {
+      background: #fff;
+      border: 1px solid #dde4ec;
+      border-radius: 16px;
+      padding: 20px;
+      align-self: start;
+    }
+
+    .details h2 {
+      margin: 0 0 12px;
+      color: #15375b;
+    }
+
+    .empty {
+      color: #64748b;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid #edf0f3;
+      font-size: 14px;
+    }
+
+    .detail-row strong {
+      color: #334155;
+    }
+
+    .suitable-banner {
+      margin: 15px 0;
+      padding: 11px;
+      border-radius: 9px;
+      background: #e3f5e9;
+      color: #17623a;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .request-btn {
+      display: block;
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #0f766e;
+      color: #fff;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 800;
+      margin-top: 14px;
+    }
+
+    .request-note {
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 10px;
+    }
+
+    .footer-message {
+      margin-top: 18px;
+      padding: 16px 18px;
+      background: #15375b;
+      color: #fff;
+      border-radius: 14px;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    @media (max-width: 820px) {
+      .controls, .workspace { grid-template-columns: 1fr; }
+      .page { padding: 14px; }
+      h1 { font-size: 25px; }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="pc" href="/demo-home.html">PC</a>
+
+  <main class="page">
+    <div class="brand">
+      <img src="/boatiesmate-secondary-long-ocean.png" alt="BoatiesMate" />
+    </div>
+
+    <section class="hero">
+      <h1>Bayswater Marina – Find a Berth</h1>
+      <div class="subtitle">
+        See suitable available berth capacity for your vessel before starting your booking request.
+      </div>
+
+      <div class="demo-note">
+        Concept demonstration: Bayswater's finger structure is represented for discussion purposes.
+        Berth sizes and availability shown below are demonstration data and do not represent live marina availability.
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="card">
+        <h2>Find capacity for my vessel</h2>
+        <label for="vesselLength">Vessel length</label>
+        <select id="vesselLength">
+          <option value="9">Up to 9m</option>
+          <option value="10.5">Up to 10.5m</option>
+          <option value="11.5" selected>11.5m</option>
+          <option value="12">12m</option>
+          <option value="14">14m</option>
+          <option value="16">16m</option>
+          <option value="20">20m</option>
+        </select>
+
+        <div class="match-summary" id="matchSummary"></div>
+      </div>
+
+      <div class="card">
+        <h2>What you are seeing</h2>
+        <div class="legend">
+          <div class="legend-item"><span class="dot suitable"></span> Suitable &amp; available</div>
+          <div class="legend-item"><span class="dot too-small"></span> Available but unsuitable for vessel size</div>
+          <div class="legend-item"><span class="dot unavailable"></span> Not currently available</div>
+        </div>
+        <p class="match-summary">
+          Availability is only the first step. BoatiesMate can then apply marina rules, vessel suitability and compliance requirements before the marina makes its decision.
+        </p>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="map-card">
+        <div class="map-title">
+          <div>
+            <h2>Available Berths</h2>
+            <div class="subtitle">Select a green berth to see more information.</div>
+          </div>
+        </div>
+
+        <div class="water" id="marinaMap"></div>
+      </div>
+
+      <aside class="details" id="detailsPanel">
+        <h2>Berth Details</h2>
+        <div class="empty">
+          Select a suitable green berth from the marina view to see its capacity and start a booking request.
+        </div>
+      </aside>
+    </section>
+
+    <div class="footer-message">
+      <strong>One marina. Two useful views.</strong><br />
+      The marina operator can see capacity, movements and operational opportunities.
+      The boatie sees only the suitable availability needed to make a simple, informed booking request.
+    </div>
+  </main>
+
+  <script src="/bayswater-berths.js"></script>
+</body>
+</html>
